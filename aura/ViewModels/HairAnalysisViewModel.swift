@@ -225,6 +225,92 @@ class HairAnalysisViewModel: ObservableObject {
             print("Analysis saved successfully")
         }
     }
+    
+    private func calculateOverallScore(scores: CategoryScores) -> Int {
+        // Convert damage score to a positive metric (5 - damage score)
+        // Higher damage score = worse condition, so we invert it
+        let damagePositive = 5.0 - scores.damage
+        
+        // Weight the categories
+        let weights: [String: Double] = [
+            "moisture": 1.0,
+            "damage": 1.2,    // Weighted higher due to importance
+            "scalp": 1.0,
+            "breakage": 1.1,  // Slightly higher weight
+            "shine": 0.8,     // Slightly lower weight (more cosmetic)
+            "porosity": 0.9,
+            "elasticity": 1.0
+        ]
+        
+        // Calculate weighted average
+        let weightedSum = (
+            scores.moisture * weights["moisture"]! +
+            damagePositive * weights["damage"]! +
+            scores.scalp * weights["scalp"]! +
+            (5.0 - scores.breakage) * weights["breakage"]! + // Also invert breakage
+            scores.shine * weights["shine"]! +
+            scores.porosity * weights["porosity"]! +
+            scores.elasticity * weights["elasticity"]!
+        )
+        
+        let totalWeight = weights.values.reduce(0, +)
+        
+        // Convert to 0-100 scale
+        return Int((weightedSum / totalWeight) * 20)
+    }
+    
+    private func generateLifestyleTips(scores: CategoryScores) -> [String] {
+        var tips: [String] = []
+        
+        // Moisture-based tips
+        if scores.moisture < 3.5 {
+            tips.append(contentsOf: [
+                "Increase water intake to at least 8 glasses daily",
+                "Consider using a humidifier in your bedroom",
+                "Include omega-3 rich foods like salmon and avocados in your diet"
+            ])
+        }
+        
+        // Damage-based tips
+        if scores.damage > 3.0 {
+            tips.append(contentsOf: [
+                "Limit heat styling to once or twice a week",
+                "Use a silk or satin pillowcase to reduce friction",
+                "Take biotin supplements after consulting with your healthcare provider"
+            ])
+        }
+        
+        // Scalp health tips
+        if scores.scalp < 4.0 {
+            tips.append(contentsOf: [
+                "Maintain a balanced diet rich in zinc and vitamin B",
+                "Practice scalp massage during washing",
+                "Avoid tight hairstyles that can stress the scalp"
+            ])
+        }
+        
+        // Breakage-specific tips
+        if scores.breakage > 3.0 {
+            tips.append(contentsOf: [
+                "Include more protein-rich foods in your diet",
+                "Trim hair every 8-10 weeks",
+                "Avoid chemical treatments until hair health improves"
+            ])
+        }
+        
+        // Porosity-based tips
+        if scores.porosity < 3.0 || scores.porosity > 4.0 {
+            tips.append(contentsOf: [
+                "Balance your hair's pH with apple cider vinegar rinses",
+                "Use lukewarm water instead of hot water when washing",
+                "Consider your local water hardness and use appropriate filters"
+            ])
+        }
+        
+        // Select a random subset of relevant tips (3-4 tips)
+        tips.shuffle()
+        return Array(tips.prefix(min(4, tips.count)))
+    }
 }
 
 // Response structures for JSON parsing

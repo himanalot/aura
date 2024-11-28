@@ -29,7 +29,9 @@ struct ContentView: View {
                         .tag(2)
                 }
                 .onAppear {
-                    progressViewModel.loadAnalyses()
+                    Task {
+                        await progressViewModel.loadAnalyses()
+                    }
                 }
                 .preferredColorScheme(.dark)
             } else {

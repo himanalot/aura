@@ -24,6 +24,10 @@ struct ProgressListView: View {
                 }
                 .padding(.vertical)
             }
+            .refreshable {
+                // This is the native SwiftUI pull-to-refresh
+                await viewModel.loadAnalyses()
+            }
             .background(AuraTheme.backgroundGradient.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

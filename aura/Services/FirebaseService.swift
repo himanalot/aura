@@ -50,13 +50,13 @@ class FirebaseService {
         try await db.collection("hairAnalyses").document().setData(data)
     }
     
-    func getHairAnalyses(for userId: String) async throws -> [HairAnalysis] {
+    func fetchHairAnalyses(userId: String) async throws -> [HairAnalysis] {
         let snapshot = try await db.collection("hairAnalyses")
             .whereField("userId", isEqualTo: userId)
             .order(by: "date", descending: true)
             .getDocuments()
         
-        return snapshot.documents.compactMap { document in
+        return try snapshot.documents.compactMap { document in
             let data = document.data()
             
             guard let ratingsData = data["ratings"] as? [String: Any],
@@ -69,7 +69,7 @@ class FirebaseService {
                   let lifestyle = recommendationsData["lifestyle"] as? [String],
                   let overallScore = data["overallScore"] as? Int,
                   let date = (data["date"] as? Timestamp)?.dateValue() else {
-                return nil
+                throw NSError(domain: "FirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid document format"])
             }
             
             let scores = CategoryScores(
