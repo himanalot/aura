@@ -4,7 +4,7 @@ struct AuraLogo: View {
     var size: CGFloat = 24
     
     var body: some View {
-        Text("aura")
+        Text("fiora")
             .font(.custom("Helvetica Neue", size: size))
             .fontWeight(.medium)
             .foregroundStyle(AuraTheme.gradient)
