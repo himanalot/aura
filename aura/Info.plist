@@ -14,5 +14,18 @@
 	<string>LaunchScreen</string>
 	<key>CFBundleExecutable</key>
 	<string>aura</string>
+	<key>GITHUB_API_TOKEN</key>
+	<string>YOUR_GITHUB_TOKEN_HERE</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take photos of your hair for analysis.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to analyze photos of your hair.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict/>
+	</dict>
 </dict>
 </plist>

@@ -5,22 +5,27 @@ target 'aura' do
   use_frameworks!
 
   # Firebase dependencies
-  pod 'Firebase'
-  pod 'FirebaseCore'
-  pod 'FirebaseAuth'
-  pod 'FirebaseFirestore'
-  pod 'FirebaseStorage'
-  pod 'FirebaseFirestoreSwift'
   pod 'Firebase/Core'
+  pod 'Firebase/Analytics'
+  pod 'FirebaseAuth'
+  pod 'FirebaseStorage'
+  pod 'FirebaseFirestore'
+  pod 'FirebaseFirestoreSwift'
   
-  # UI & Charts
-  pod 'DGCharts'  # Updated from Charts to DGCharts
-  pod 'SkeletonView'
+  # Image Processing & ML
+  pod 'GoogleMLKit/ImageLabeling'
+  pod 'GoogleMLKit/FaceDetection'
+  
+  # UI & Image Handling
   pod 'Kingfisher'
+  pod 'DGCharts'
+  pod 'SkeletonView'
   
   # Networking & Data
   pod 'Alamofire'
   pod 'SwiftyJSON'
+  pod 'OpenAIKit'  # Add this line
+
 
   post_install do |installer|
     installer.pods_project.targets.each do |target|
@@ -35,28 +40,11 @@ target 'aura' do
         end
       end
       
-      # Add build settings to fix sandbox permissions and Swift initialization issues
       target.build_configurations.each do |config|
         config.build_settings['ENABLE_BITCODE'] = 'NO'
         config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-        
-        # Add sandbox permissions
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'YES'
-        config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
-        config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
-        config.build_settings['CODE_SIGNING_IDENTITY'] = ''
-        
-        # Swift compiler flags to handle initialization
-        config.build_settings['OTHER_SWIFT_FLAGS'] = '$(inherited) -suppress-warnings'
-        config.build_settings['SWIFT_ENFORCE_EXCLUSIVE_ACCESS'] = 'off'
-        
-        # Enable modules
-        config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
-        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
-        
-        # Swift version
-        config.build_settings['SWIFT_VERSION'] = '5.0'
       end
     end
   end
