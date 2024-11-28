@@ -40,6 +40,6 @@ struct ContentView: View {
             }
         }
         .environmentObject(authViewModel)
-        .tint(AuraTheme.primaryPurple)
+        .tint(AuraTheme.primary)
     }
 }

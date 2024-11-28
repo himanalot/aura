@@ -1,30 +1,43 @@
 import SwiftUI
 
 struct AuraTheme {
+    // Primary brand color - a sophisticated deep teal
+    static let primary = Color(hex: "#006D77")
+    
+    // Secondary accent - a soft rose gold
+    static let accent = Color(hex: "#E29C93")
+    
+    // Modern, elegant gradient
     static let gradient = LinearGradient(
         colors: [
-            Color(hex: "#00C6FF").opacity(0.9),  // Cyan
-            Color(hex: "#B066FF").opacity(0.9),  // Purple
-            Color(hex: "#FF69B4").opacity(0.9)   // Pink
+            Color(hex: "#006D77"),  // Deep teal
+            Color(hex: "#83C5BE")   // Soft teal
         ],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
     
-    static let primaryBlue = Color(hex: "#00C6FF")
-    static let primaryPurple = Color(hex: "#B066FF")
-    static let primaryPink = Color(hex: "#FF69B4")
-    
+    // Subtle background gradient
     static let backgroundGradient = LinearGradient(
         colors: [
-            Color(.systemBackground).opacity(0.95),
-            Color(.systemBackground)
+            Color(.systemBackground),
+            Color(.systemBackground).opacity(0.98)
         ],
         startPoint: .top,
         endPoint: .bottom
     )
     
-    static let cardBackground = Color(.systemBackground).opacity(0.8)
+    // Card backgrounds with subtle transparency
+    static let cardBackground = Color(.systemBackground).opacity(0.95)
+    
+    // Text colors
+    static let primaryText = Color(.label)
+    static let secondaryText = Color(.secondaryLabel)
+    
+    // Semantic colors
+    static let success = Color(hex: "#2D6A4F")  // Deep green
+    static let warning = Color(hex: "#CB997E")  // Muted terra cotta
+    static let error = Color(hex: "#BC4749")    // Muted red
 }
 
 extension Color {
