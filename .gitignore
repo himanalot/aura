@@ -2,6 +2,8 @@
 **/GoogleService-Info.plist
 **/Info.plist
 **/APIKeys.swift
+**/Config.xcconfig
+aura/Config.xcconfig
 
 # Xcode
 xcuserdata/
@@ -37,4 +39,30 @@ fastlane/test_output
 .DS_Store
 *.swp
 *.lock
-profile 
+profile
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE specific files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Generated files
+*.generated.swift
+*.generated.h
+*.generated.m
+
+# Temporary files
+*.tmp
+*.bak
+*.log

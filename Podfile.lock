@@ -946,7 +946,7 @@ PODS:
     - abseil/meta/type_traits
     - abseil/xcprivacy
   - abseil/xcprivacy (1.20240116.2)
-  - Alamofire (5.10.1)
+  - Alamofire (5.10.2)
   - BoringSSL-GRPC (0.0.32):
     - BoringSSL-GRPC/Implementation (= 0.0.32)
     - BoringSSL-GRPC/Interface (= 0.0.32)
@@ -956,6 +956,8 @@ PODS:
   - DGCharts (5.1.0):
     - DGCharts/Core (= 5.1.0)
   - DGCharts/Core (5.1.0)
+  - Firebase/Analytics (10.29.0):
+    - Firebase/Core
   - Firebase/Core (10.29.0):
     - Firebase/CoreOnly
     - FirebaseAnalytics (~> 10.29.0)
@@ -1217,6 +1219,7 @@ PODS:
     - nanopb/encode (= 2.30910.0)
   - nanopb/decode (2.30910.0)
   - nanopb/encode (2.30910.0)
+  - OpenAIKit (1.9.3)
   - PromisesObjC (2.4.0)
   - RecaptchaInterop (100.0.0)
   - SkeletonView (1.30.4)
@@ -1225,6 +1228,7 @@ PODS:
 DEPENDENCIES:
   - Alamofire
   - DGCharts
+  - Firebase/Analytics
   - Firebase/Core
   - FirebaseAuth
   - FirebaseFirestore
@@ -1233,6 +1237,7 @@ DEPENDENCIES:
   - GoogleMLKit/FaceDetection
   - GoogleMLKit/ImageLabeling
   - Kingfisher
+  - OpenAIKit
   - SkeletonView
   - SwiftyJSON
 
@@ -1276,6 +1281,7 @@ SPEC REPOS:
     - MLKitVision
     - MLKitVisionKit
     - nanopb
+    - OpenAIKit
     - PromisesObjC
     - RecaptchaInterop
     - SkeletonView
@@ -1283,7 +1289,7 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   abseil: d121da9ef7e2ff4cab7666e76c5a3e0915ae08c3
-  Alamofire: 840d2a1ad82355b536ec6ba5f97e5bfa54600ca3
+  Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
   BoringSSL-GRPC: 1e2348957acdbcad360b80a264a90799984b2ba6
   DGCharts: 1c6daf585b6cfc78807af44ea690d357c410627f
   Firebase: cec914dab6fd7b1bd8ab56ea07ce4e03dd251c2d
@@ -1320,11 +1326,12 @@ SPEC CHECKSUMS:
   MLKitVision: e858c5f125ecc288e4a31127928301eaba9ae0c1
   MLKitVisionKit: 6d2ea9741b262ec0fed2a5a3de521cfa671c6e83
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
+  OpenAIKit: 211dc8c93254c4472e62ac8129a94e4433c1ab88
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
   SkeletonView: 5a050f6411e697abd4cda0a8d767013399dccd69
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
 
-PODFILE CHECKSUM: 513638ca6b62dfbadc6feb25493b9afd7eca1220
+PODFILE CHECKSUM: 6639a5419304f2f74a1c5dd22bc7ec4c74595923
 
 COCOAPODS: 1.16.2

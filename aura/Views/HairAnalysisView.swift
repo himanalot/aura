@@ -7,6 +7,8 @@ struct HairAnalysisView: View {
     @State private var showImagePicker = false
     @State private var showCamera = false
     @State private var selectedImage: UIImage?
+    @State private var showError = false
+    @State private var isAnalyzing = false
     
     var body: some View {
         NavigationView {
@@ -17,6 +19,14 @@ struct HairAnalysisView: View {
                         .scaledToFit()
                         .frame(height: 300)
                         .cornerRadius(10)
+                        .overlay(
+                            isAnalyzing ? 
+                                ProgressView("Analyzing...")
+                                    .padding()
+                                    .background(Color(.systemBackground).opacity(0.8))
+                                    .cornerRadius(10)
+                                : nil
+                        )
                 } else {
                     UploadPlaceholderView()
                 }
@@ -27,17 +37,17 @@ struct HairAnalysisView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
+                    .disabled(isAnalyzing)
                     
                     Button(action: { showImagePicker = true }) {
                         Label("Upload Photo", systemImage: "photo")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
+                    .disabled(isAnalyzing)
                 }
                 
-                if viewModel.isAnalyzing {
-                    ProgressView("Analyzing hair health...")
-                } else if let analysis = viewModel.hairAnalysis {
+                if let analysis = viewModel.hairAnalysis {
                     HairAnalysisResultView(analysis: analysis)
                 }
                 
@@ -52,9 +62,27 @@ struct HairAnalysisView: View {
                 ImagePicker(image: $selectedImage, sourceType: .camera)
             }
             .onChange(of: selectedImage) { newImage in
-                if let image = newImage {
-                    viewModel.analyzeHair(image: image)
+                guard let image = newImage, !isAnalyzing else { return }
+                isAnalyzing = true
+                
+                Task {
+                    do {
+                        try await viewModel.analyzeHair(image: image)
+                        await MainActor.run {
+                            isAnalyzing = false
+                        }
+                    } catch {
+                        await MainActor.run {
+                            showError = true
+                            isAnalyzing = false
+                        }
+                    }
                 }
+            }
+            .alert("Error", isPresented: $showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.error?.localizedDescription ?? "An error occurred while analyzing the image.")
             }
         }
     }

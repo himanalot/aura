@@ -17,3 +17,11 @@
    - Add it to the project root directory
 
 6. Open aura.xcworkspace in Xcode 
+
+## Configuration
+
+To set up the API key:
+
+1. Copy `Config.template.xcconfig` to `Config.xcconfig`
+2. Replace `your-api-key-here` with your actual OpenAI API key
+3. Never commit `Config.xcconfig` to version control

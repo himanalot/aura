@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D810FBC6C3ED9948010DFF3C /* Pods_aura.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 088C9999EB78D4E77E9B8FE0 /* Pods_aura.framework */; };
+		0084CC9214FE63F64BD438CC /* Pods_aura.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 764AA8BE3E6D1704A5BAD963 /* Pods_aura.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,9 +28,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		088C9999EB78D4E77E9B8FE0 /* Pods_aura.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_aura.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		392263EC0F79F512B2172E53 /* Pods-aura.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-aura.debug.xcconfig"; path = "Target Support Files/Pods-aura/Pods-aura.debug.xcconfig"; sourceTree = "<group>"; };
-		E075BFBF3220C3753E9C6B34 /* Pods-aura.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-aura.release.xcconfig"; path = "Target Support Files/Pods-aura/Pods-aura.release.xcconfig"; sourceTree = "<group>"; };
+		0EEFC8477A967408F44E71A7 /* Pods-aura.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-aura.release.xcconfig"; path = "Target Support Files/Pods-aura/Pods-aura.release.xcconfig"; sourceTree = "<group>"; };
+		764AA8BE3E6D1704A5BAD963 /* Pods_aura.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_aura.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D81EDF3E1F686BBB5B6FDA9 /* Pods-aura.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-aura.debug.xcconfig"; path = "Target Support Files/Pods-aura/Pods-aura.debug.xcconfig"; sourceTree = "<group>"; };
 		FDB0D2962CF0F3CA00FEDCF6 /* aura.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = aura.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FDB0D2A62CF0F3CB00FEDCF6 /* auraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = auraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FDB0D2B02CF0F3CB00FEDCF6 /* auraUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = auraUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,11 +57,15 @@
 		};
 		FDB0D2A92CF0F3CB00FEDCF6 /* auraTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = auraTests;
 			sourceTree = "<group>";
 		};
 		FDB0D2B32CF0F3CB00FEDCF6 /* auraUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = auraUITests;
 			sourceTree = "<group>";
 		};
@@ -72,7 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D810FBC6C3ED9948010DFF3C /* Pods_aura.framework in Frameworks */,
+				0084CC9214FE63F64BD438CC /* Pods_aura.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,21 +97,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		20F8AD2D6434DD6742D90904 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				088C9999EB78D4E77E9B8FE0 /* Pods_aura.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		A915AEFB386A2B47447FF709 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				392263EC0F79F512B2172E53 /* Pods-aura.debug.xcconfig */,
-				E075BFBF3220C3753E9C6B34 /* Pods-aura.release.xcconfig */,
+				7D81EDF3E1F686BBB5B6FDA9 /* Pods-aura.debug.xcconfig */,
+				0EEFC8477A967408F44E71A7 /* Pods-aura.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		C0526E3A1394AA94E67262AE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				764AA8BE3E6D1704A5BAD963 /* Pods_aura.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		FDB0D28D2CF0F3CA00FEDCF6 = {
@@ -118,7 +122,7 @@
 				FDB0D2B32CF0F3CB00FEDCF6 /* auraUITests */,
 				FDB0D2972CF0F3CA00FEDCF6 /* Products */,
 				A915AEFB386A2B47447FF709 /* Pods */,
-				20F8AD2D6434DD6742D90904 /* Frameworks */,
+				C0526E3A1394AA94E67262AE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -139,12 +143,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FDB0D2BA2CF0F3CB00FEDCF6 /* Build configuration list for PBXNativeTarget "aura" */;
 			buildPhases = (
-				FBFA5F775372F757D19ACC07 /* [CP] Check Pods Manifest.lock */,
+				A8C76CC3304870EFF98E2B6E /* [CP] Check Pods Manifest.lock */,
 				FDB0D2922CF0F3CA00FEDCF6 /* Sources */,
 				FDB0D2932CF0F3CA00FEDCF6 /* Frameworks */,
 				FDB0D2942CF0F3CA00FEDCF6 /* Resources */,
-				1E7080DE21EBF81DE7077E59 /* [CP] Embed Pods Frameworks */,
-				EFF6C45A38F631E2EF026E61 /* [CP] Copy Pods Resources */,
+				568AE315C16EA2D7AD0D18C2 /* [CP] Embed Pods Frameworks */,
+				A3392440C3BCC09A615FE64C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -272,7 +276,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1E7080DE21EBF81DE7077E59 /* [CP] Embed Pods Frameworks */ = {
+		568AE315C16EA2D7AD0D18C2 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -289,7 +293,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-aura/Pods-aura-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EFF6C45A38F631E2EF026E61 /* [CP] Copy Pods Resources */ = {
+		A3392440C3BCC09A615FE64C /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -306,7 +310,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-aura/Pods-aura-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FBFA5F775372F757D19ACC07 /* [CP] Check Pods Manifest.lock */ = {
+		A8C76CC3304870EFF98E2B6E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -493,7 +497,7 @@
 		};
 		FDB0D2BB2CF0F3CB00FEDCF6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 392263EC0F79F512B2172E53 /* Pods-aura.debug.xcconfig */;
+			baseConfigurationReference = 7D81EDF3E1F686BBB5B6FDA9 /* Pods-aura.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -526,7 +530,7 @@
 		};
 		FDB0D2BC2CF0F3CB00FEDCF6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E075BFBF3220C3753E9C6B34 /* Pods-aura.release.xcconfig */;
+			baseConfigurationReference = 0EEFC8477A967408F44E71A7 /* Pods-aura.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
