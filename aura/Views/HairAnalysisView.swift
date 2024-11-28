@@ -42,10 +42,16 @@ struct HairAnalysisView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(AuraTheme.gradient)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(AuraTheme.cardBackground)
+                                    .shadow(color: Color.black.opacity(0.1), radius: 8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(AuraTheme.gradient)
+                                    )
+                            )
                             .foregroundColor(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .shadow(color: AuraTheme.primaryBlue.opacity(0.3), radius: 10, x: 0, y: 5)
                         }
                         .padding(.horizontal)
                         .disabled(isAnalyzing)
@@ -133,15 +139,23 @@ struct ActionButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: 8) {
                 Image(systemName: icon)
                 Text(title)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(AuraTheme.cardBackground)
+                    .shadow(color: Color.black.opacity(0.1), radius: 8)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(AuraTheme.gradient, lineWidth: 1)
+            )
+            .foregroundStyle(AuraTheme.gradient)
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
     }
 }
 
