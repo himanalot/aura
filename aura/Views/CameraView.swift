@@ -66,6 +66,7 @@ struct CameraView: View {
 class CameraModel: NSObject, ObservableObject {
     @Published var photo: UIImage?
     @Published var isFlashOn = false
+    @Published var error: String?
     
     let session = AVCaptureSession()
     private var device: AVCaptureDevice?
@@ -79,10 +80,27 @@ class CameraModel: NSObject, ObservableObject {
     func setupCamera() {
         checkPermissions()
         
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else { return }
+        // Start with front camera configuration
+        let discoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera],
+            mediaType: .video,
+            position: .front
+        )
+        
+        guard let device = discoverySession.devices.first(where: { $0.position == .front }) else {
+            DispatchQueue.main.async {
+                self.error = "Front camera not available"
+            }
+            return
+        }
+        
         self.device = device
         
+        session.beginConfiguration()
         do {
+            // Remove any existing inputs
+            session.inputs.forEach { session.removeInput($0) }
+            
             let input = try AVCaptureDeviceInput(device: device)
             if session.canAddInput(input) {
                 session.addInput(input)
@@ -92,11 +110,16 @@ class CameraModel: NSObject, ObservableObject {
                 session.addOutput(output)
             }
             
+            session.sessionPreset = .photo
+            session.commitConfiguration()
+            
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 self?.session.startRunning()
             }
         } catch {
-            print("Error setting up camera: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.error = "Error setting up camera: \(error.localizedDescription)"
+            }
         }
     }
     

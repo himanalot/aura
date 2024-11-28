@@ -57,15 +57,11 @@
 		};
 		FDB0D2A92CF0F3CB00FEDCF6 /* auraTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = auraTests;
 			sourceTree = "<group>";
 		};
 		FDB0D2B32CF0F3CB00FEDCF6 /* auraUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = auraUITests;
 			sourceTree = "<group>";
 		};

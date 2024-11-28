@@ -9,6 +9,7 @@ struct HairAnalysisView: View {
     @State private var selectedImage: UIImage?
     @State private var showError = false
     @State private var isAnalyzing = false
+    @State private var showResults = false
     
     var body: some View {
         NavigationView {
@@ -20,12 +21,18 @@ struct HairAnalysisView: View {
                         .frame(height: 300)
                         .cornerRadius(10)
                         .overlay(
-                            isAnalyzing ? 
-                                ProgressView("Analyzing...")
+                            Group {
+                                if isAnalyzing {
+                                    VStack {
+                                        ProgressView()
+                                        Text(viewModel.analysisProgress)
+                                            .padding(.top, 8)
+                                    }
                                     .padding()
                                     .background(Color(.systemBackground).opacity(0.8))
                                     .cornerRadius(10)
-                                : nil
+                                }
+                            }
                         )
                 } else {
                     UploadPlaceholderView()
@@ -47,8 +54,10 @@ struct HairAnalysisView: View {
                     .disabled(isAnalyzing)
                 }
                 
-                if let analysis = viewModel.hairAnalysis {
+                if showResults, let analysis = viewModel.hairAnalysis {
                     HairAnalysisResultView(analysis: analysis)
+                        .transition(.opacity)
+                        .animation(.easeIn, value: showResults)
                 }
                 
                 Spacer()
@@ -64,12 +73,14 @@ struct HairAnalysisView: View {
             .onChange(of: selectedImage) { newImage in
                 guard let image = newImage, !isAnalyzing else { return }
                 isAnalyzing = true
+                showResults = false
                 
                 Task {
                     do {
                         try await viewModel.analyzeHair(image: image)
                         await MainActor.run {
                             isAnalyzing = false
+                            showResults = true
                         }
                     } catch {
                         await MainActor.run {
