@@ -9,86 +9,90 @@ struct HairAnalysisView: View {
     @State private var selectedImage: UIImage?
     @State private var showError = false
     @State private var isAnalyzing = false
-    @State private var showResults = false
+    @State private var navigationPath = NavigationPath()
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                if let image = selectedImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 300)
-                        .cornerRadius(10)
-                        .overlay(
-                            Group {
-                                if isAnalyzing {
-                                    VStack {
-                                        ProgressView()
-                                        Text(viewModel.analysisProgress)
-                                            .padding(.top, 8)
+        NavigationStack(path: $navigationPath) {
+            ZStack {
+                AuraTheme.backgroundGradient
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 24) {
+                    if let image = selectedImage {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: UIScreen.main.bounds.height * 0.4)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+                            .padding(.horizontal)
+                            .overlay(
+                                Group {
+                                    if isAnalyzing {
+                                        AnalyzingOverlayView(progress: viewModel.analysisProgress)
                                     }
-                                    .padding()
-                                    .background(Color(.systemBackground).opacity(0.8))
-                                    .cornerRadius(10)
                                 }
+                            )
+                        
+                        Button(action: analyzeImage) {
+                            HStack {
+                                Image(systemName: "wand.and.stars")
+                                Text("Analyze Hair")
                             }
-                        )
-                } else {
-                    UploadPlaceholderView()
-                }
-                
-                HStack(spacing: 20) {
-                    Button(action: { showCamera = true }) {
-                        Label("Take Photo", systemImage: "camera")
                             .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(AuraTheme.gradient)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: AuraTheme.primaryBlue.opacity(0.3), radius: 10, x: 0, y: 5)
+                        }
+                        .padding(.horizontal)
+                        .disabled(isAnalyzing)
+                    } else {
+                        UploadPlaceholderView()
+                            .padding(.horizontal)
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(isAnalyzing)
                     
-                    Button(action: { showImagePicker = true }) {
-                        Label("Upload Photo", systemImage: "photo")
-                            .frame(maxWidth: .infinity)
+                    VStack(spacing: 16) {
+                        HStack(spacing: 20) {
+                            ActionButton(
+                                title: "Take Photo",
+                                icon: "camera.fill",
+                                action: { showCamera = true }
+                            )
+                            
+                            ActionButton(
+                                title: "Upload Photo",
+                                icon: "photo.fill",
+                                action: { showImagePicker = true }
+                            )
+                        }
+                        .disabled(isAnalyzing)
+                        .padding(.horizontal)
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(isAnalyzing)
                 }
-                
-                if showResults, let analysis = viewModel.hairAnalysis {
-                    HairAnalysisResultView(analysis: analysis)
-                        .transition(.opacity)
-                        .animation(.easeIn, value: showResults)
-                }
-                
-                Spacer()
+                .padding(.vertical, 24)
             }
-            .padding()
-            .navigationTitle("Hair Analysis")
+            .navigationDestination(for: HairAnalysis.self) { analysis in
+                AnalysisResultScreen(analysis: analysis) {
+                    // Reset and go back to analysis screen
+                    selectedImage = nil
+                    navigationPath.removeLast()
+                }
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    AuraLogo(size: 32)
+                }
+            }
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $selectedImage, sourceType: .photoLibrary)
             }
             .sheet(isPresented: $showCamera) {
                 ImagePicker(image: $selectedImage, sourceType: .camera)
-            }
-            .onChange(of: selectedImage) { newImage in
-                guard let image = newImage, !isAnalyzing else { return }
-                isAnalyzing = true
-                showResults = false
-                
-                Task {
-                    do {
-                        try await viewModel.analyzeHair(image: image)
-                        await MainActor.run {
-                            isAnalyzing = false
-                            showResults = true
-                        }
-                    } catch {
-                        await MainActor.run {
-                            showError = true
-                            isAnalyzing = false
-                        }
-                    }
-                }
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -97,24 +101,66 @@ struct HairAnalysisView: View {
             }
         }
     }
+    
+    private func analyzeImage() {
+        guard let image = selectedImage, !isAnalyzing else { return }
+        isAnalyzing = true
+        
+        Task {
+            do {
+                try await viewModel.analyzeHair(image: image)
+                await MainActor.run {
+                    isAnalyzing = false
+                    if let analysis = viewModel.hairAnalysis {
+                        navigationPath.append(analysis)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    showError = true
+                    isAnalyzing = false
+                }
+            }
+        }
+    }
 }
 
-struct UploadPlaceholderView: View {
+
+struct ActionButton: View {
+    let title: String
+    let icon: String
+    let action: () -> Void
+    
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "camera.circle.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .foregroundColor(.gray)
-            
-            Text("Take or upload a photo\nto analyze your hair health")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.gray)
+        Button(action: action) {
+            HStack {
+                Image(systemName: icon)
+                Text(title)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
         }
-        .frame(height: 300)
-        .frame(maxWidth: .infinity)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(10)
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+    }
+}
+
+struct AnalyzingOverlayView: View {
+    let progress: String
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.black.opacity(0.7))
+            VStack(spacing: 16) {
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .tint(.white)
+                Text(progress)
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
+            .padding(24)
+        }
     }
 } 

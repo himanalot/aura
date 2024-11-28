@@ -4,55 +4,56 @@ struct HairAnalysisResultView: View {
     let analysis: HairAnalysis
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Group {
-                ResultSection(title: "Hair Thickness", value: analysis.thickness)
-                ResultSection(title: "Hair Health", value: analysis.health)
-            }
+        VStack(spacing: 24) {
+            // Overall Score
+            ScoreCircleView(score: analysis.overallScore)
+                .frame(height: 120)
             
-            Text("Recommendations")
-                .font(.headline)
+            // Category Scores
+            CategoryScoresView(scores: analysis.ratings.scores)
             
-            ForEach(analysis.recommendations, id: \.self) { recommendation in
-                HStack(alignment: .top) {
-                    Image(systemName: "circle.fill")
-                        .font(.system(size: 6))
-                        .padding(.top, 6)
-                    Text(recommendation)
-                }
-                .foregroundColor(.primary)
-            }
+            // Recommendations
+            RecommendationsView(recommendations: analysis.recommendations)
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(radius: 2)
-    }
-}
-
-private struct ResultSection: View {
-    let title: String
-    let value: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.headline)
-            Text(value)
-                .foregroundColor(.primary)
-        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemBackground))
+                .shadow(radius: 3)
+        )
     }
 }
 
 #Preview {
     HairAnalysisResultView(analysis: HairAnalysis(
-        thickness: "Medium",
-        health: "Good",
-        recommendations: [
-            "Include more protein-rich foods in your diet",
-            "Use a silk pillowcase to reduce friction",
-            "Deep condition your hair weekly"
-        ],
+        ratings: HairRatings(
+            thickness: "Medium",
+            health: "Good",
+            scores: CategoryScores(
+                moisture: 4.5,
+                damage: 3.0,
+                scalp: 4.0,
+                breakage: 3.5,
+                shine: 4.0,
+                porosity: 3.5,
+                elasticity: 4.0
+            )
+        ),
+        overallScore: 70,
+        recommendations: Recommendations(
+            products: [
+                ProductRecommendation(category: "Shampoo", name: "Kerastase Shampoo", reason: "For deep hydration"),
+                ProductRecommendation(category: "Conditioner", name: "Briogeo Conditioner", reason: "For damaged hair")
+            ],
+            techniques: [
+                "Use a silk pillowcase to reduce friction",
+                "Deep condition your hair weekly"
+            ],
+            lifestyle: [
+                "Include more protein-rich foods in your diet",
+                "Use a silk pillowcase to reduce friction"
+            ]
+        ),
         date: Date()
     ))
     .padding()
