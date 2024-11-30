@@ -3,6 +3,7 @@ import FirebaseAuth
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @State private var showDeleteConfirmation = false
     
     var body: some View {
         NavigationView {
@@ -28,9 +29,27 @@ struct ProfileView: View {
                                 .foregroundColor(.red)
                         }
                     }
+                    
+                    Button(action: { showDeleteConfirmation = true }) {
+                        HStack {
+                            Text("Delete Account")
+                                .foregroundColor(.red)
+                            Spacer()
+                            Image(systemName: "trash.fill")
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
             }
             .navigationTitle("Profile")
+            .alert("Delete Account", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
+                    authViewModel.deleteAccount()
+                }
+            } message: {
+                Text("Are you sure you want to delete your account? This action cannot be undone.")
+            }
         }
     }
 } 

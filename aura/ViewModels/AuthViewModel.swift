@@ -44,4 +44,15 @@ class AuthViewModel: ObservableObject {
     func signOut() {
         try? Auth.auth().signOut()
     }
+    
+    func deleteAccount() {
+        Auth.auth().currentUser?.delete { [weak self] error in
+            if let error = error {
+                self?.alertItem = AlertItem(
+                    title: "Delete Account Error",
+                    message: error.localizedDescription
+                )
+            }
+        }
+    }
 } 
