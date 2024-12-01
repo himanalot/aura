@@ -133,4 +133,25 @@ class FirebaseService {
         
         try await db.collection("diagnostics").document().setData(data)
     }
+    
+    func fetchLatestDiagnosticResults(userId: String) async throws -> DiagnosticResults? {
+        let snapshot = try await db.collection("diagnostics")
+            .whereField("userId", isEqualTo: userId)
+            .order(by: "date", descending: true)
+            .limit(to: 1)
+            .getDocuments()
+        
+        guard let document = snapshot.documents.first else {
+            return nil
+        }
+        
+        let data = document.data()
+        guard let answers = data["answers"] as? [String: String],
+              let date = (data["date"] as? Timestamp)?.dateValue(),
+              let userId = data["userId"] as? String else {
+            throw NSError(domain: "FirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid document format"])
+        }
+        
+        return DiagnosticResults(answers: answers, date: date, userId: userId)
+    }
 } 
