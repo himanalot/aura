@@ -169,6 +169,12 @@ class FirebaseService {
             createdAt: Date()
         )
         
+        // Also update the user's document with their referral code
+        try await db.collection("users").document(userId).setData([
+            "referralCode": code
+        ], merge: true)
+        
+        // Save the referral code document
         try await db.collection("referralCodes").document(referralCode.id).setData([
             "ownerId": referralCode.ownerId,
             "code": referralCode.code,
@@ -180,24 +186,76 @@ class FirebaseService {
     }
     
     func useReferralCode(_ code: String, by userId: String) async throws {
+        let upperCode = code.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Get the referral code document first
         let snapshot = try await db.collection("referralCodes")
-            .whereField("code", isEqualTo: code)
+            .whereField("code", isEqualTo: upperCode)
             .getDocuments()
         
-        guard let document = snapshot.documents.first,
-              var referralCode = try? document.data(as: ReferralCode.self),
-              referralCode.isValid,
-              !referralCode.usedBy.contains(userId) else {
+        guard !snapshot.documents.isEmpty else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid referral code"])
         }
         
+        let document = snapshot.documents.first!
+        let data = document.data()
+        
+        // Manual decoding to ensure we get all fields
+        let referralCode = ReferralCode(
+            id: document.documentID,
+            ownerId: data["ownerId"] as? String ?? "",
+            code: data["code"] as? String ?? "",
+            usedBy: data["usedBy"] as? [String] ?? [],
+            createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+        )
+        
+        // Check if user has already used a code from this owner
+        let userDoc = try await db.collection("users").document(userId).getDocument()
+        if let userData = userDoc.data(),
+           let usedReferralCode = userData["usedReferralCode"] as? String {
+            // Get the owner of the previously used code
+            let previousCodeSnapshot = try await db.collection("referralCodes")
+                .whereField("code", isEqualTo: usedReferralCode)
+                .getDocuments()
+            
+            if let previousCodeDoc = previousCodeSnapshot.documents.first,
+               let previousOwnerId = previousCodeDoc.data()["ownerId"] as? String,
+               previousOwnerId == referralCode.ownerId {
+                throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "You have already used a referral code from this user"])
+            }
+        }
+        
+        // Validation checks
+        if referralCode.ownerId == userId {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "You cannot use your own referral code"])
+        }
+        
+        if !referralCode.isValid {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "This referral code has already been fully used"])
+        }
+        
+        if referralCode.usedBy.contains(userId) {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "You have already used this referral code"])
+        }
+        
+        // All validations passed, update the documents
         try await document.reference.updateData([
             "usedBy": FieldValue.arrayUnion([userId])
         ])
         
-        // Give free analyses to both users
-        try await updateAvailableAnalyses(userId: userId, increment: 1)
-        try await updateAvailableAnalyses(userId: referralCode.ownerId, increment: 1)
+        // Update the user who used the code (just mark that they used it, no analyses given)
+        try await db.collection("users").document(userId).setData([
+            "usedReferralCode": upperCode
+        ], merge: true)
+        
+        // If this is the second use of the code, give the owner one free analysis
+        if referralCode.usedBy.count == 1 {
+            try await db.collection("users").document(referralCode.ownerId).setData([
+                "availableAnalyses": FieldValue.increment(Int64(1))
+            ], merge: true)
+        }
+        
+        print("Successfully used referral code: \(upperCode)")
     }
     
     func updateAvailableAnalyses(userId: String, increment: Int) async throws {
@@ -208,13 +266,33 @@ class FirebaseService {
     }
     
     func getReferralStatus(userId: String) async throws -> UserReferralStatus {
-        let userDoc = try await db.collection("users").document(userId).getDocument()
-        let data = userDoc.data() ?? [:]
+        let document = try await db.collection("users").document(userId).getDocument()
+        let data = document.data() ?? [:]
         
         return UserReferralStatus(
             referralCode: data["referralCode"] as? String,
             usedReferralCode: data["usedReferralCode"] as? String,
             availableAnalyses: data["availableAnalyses"] as? Int ?? 0
         )
+    }
+    
+    func getReferralCode(_ code: String) async throws -> ReferralCode {
+        let snapshot = try await db.collection("referralCodes")
+            .whereField("code", isEqualTo: code)
+            .getDocuments()
+        
+        guard let document = snapshot.documents.first,
+              let referralCode = try? document.data(as: ReferralCode.self) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid referral code"])
+        }
+        
+        return referralCode
+    }
+    
+    // Add this function to decrement available analyses when used
+    func decrementAvailableAnalyses(userId: String) async throws {
+        try await db.collection("users").document(userId).setData([
+            "availableAnalyses": FieldValue.increment(Int64(-1))
+        ], merge: true)
     }
 } 

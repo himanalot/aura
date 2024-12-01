@@ -16,6 +16,8 @@ struct HairAnalysisView: View {
     @State private var showReferralCodeShare = false
     @State private var referralStatus: UserReferralStatus?
     @State private var generatedReferralCode: ReferralCode?
+    @State private var isGeneratingCode = false
+    @State private var errorMessage: String?
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -124,33 +126,59 @@ struct HairAnalysisView: View {
                 ImagePicker(image: $selectedImage, sourceType: .photoLibrary)
             }
             .sheet(isPresented: $showCamera) {
-                CameraView(image: $selectedImage)
+                ImagePicker(image: $selectedImage, sourceType: .camera)
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text(viewModel.error?.localizedDescription ?? "An error occurred while analyzing the image.")
+                Text(errorMessage ?? "An error occurred while analyzing the image.")
             }
-            .sheet(isPresented: $showReferralCodeShare) {
-                if let code = generatedReferralCode {
-                    ReferralShareView(referralCode: code) {
-                        showReferralCodeShare = false
-                    }
-                }
-            }
-            .sheet(isPresented: $showReferralCodeEntry) {
-                ReferralView {
+        }
+        .task {
+            await loadUserReferralStatus()
+        }
+        .sheet(isPresented: $showReferralCodeShare) {
+            if isGeneratingCode {
+                ProgressView("Generating code...")
+                    .padding()
+            } else if let code = generatedReferralCode {
+                ReferralShareView(referralCode: code) {
+                    showReferralCodeShare = false
                     Task {
-                        if let userId = Auth.auth().currentUser?.uid {
-                            referralStatus = try? await FirebaseService.shared.getReferralStatus(userId: userId)
-                        }
+                        await loadUserReferralStatus()
                     }
                 }
+            } else {
+                Text("Unable to generate referral code")
+                    .padding()
             }
-            .task {
-                if let userId = Auth.auth().currentUser?.uid {
-                    referralStatus = try? await FirebaseService.shared.getReferralStatus(userId: userId)
+        }
+        .sheet(isPresented: $showReferralCodeEntry) {
+            ReferralView {
+                Task {
+                    await loadUserReferralStatus()
                 }
+            }
+        }
+    }
+    
+    private func loadUserReferralStatus() async {
+        if let userId = Auth.auth().currentUser?.uid {
+            do {
+                referralStatus = try await FirebaseService.shared.getReferralStatus(userId: userId)
+                if let code = referralStatus?.referralCode {
+                    do {
+                        generatedReferralCode = try await FirebaseService.shared.getReferralCode(code)
+                    } catch {
+                        print("Error loading existing referral code: \(error)")
+                        errorMessage = "Failed to load referral code"
+                        showError = true
+                    }
+                }
+            } catch {
+                print("Error loading referral status: \(error)")
+                errorMessage = "Failed to load referral status"
+                showError = true
             }
         }
     }
@@ -161,21 +189,29 @@ struct HairAnalysisView: View {
         Task {
             do {
                 if let userId = Auth.auth().currentUser?.uid {
-                    // Check if user has available analyses
                     if let status = referralStatus, status.availableAnalyses > 0 {
-                        // User has available analyses, proceed with analysis
                         await performAnalysis(image: image)
                     } else {
-                        // Generate referral code if they don't have one
-                        if generatedReferralCode == nil {
-                            generatedReferralCode = try await FirebaseService.shared.generateReferralCode(for: userId)
-                        }
+                        // Generate new code or get existing one
+                        isGeneratingCode = true
                         showReferralCodeShare = true
+                        
+                        if generatedReferralCode == nil {
+                            do {
+                                generatedReferralCode = try await FirebaseService.shared.generateReferralCode(for: userId)
+                            } catch {
+                                errorMessage = "Failed to generate referral code: \(error.localizedDescription)"
+                                showError = true
+                            }
+                        }
+                        
+                        isGeneratingCode = false
                     }
                 }
             } catch {
                 await MainActor.run {
                     showError = true
+                    errorMessage = error.localizedDescription
                 }
             }
         }
@@ -194,6 +230,7 @@ struct HairAnalysisView: View {
         } catch {
             await MainActor.run {
                 showError = true
+                errorMessage = error.localizedDescription
                 isAnalyzing = false
             }
         }
