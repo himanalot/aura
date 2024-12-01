@@ -14,6 +14,26 @@ class AuthViewModel: ObservableObject {
     @Published var alertItem: AlertItem?
     
     init() {
+        // Check for existing user session when app launches
+        if let user = Auth.auth().currentUser {
+            self.currentUser = user
+            self.isSignedIn = true
+            
+            // Check for diagnostic results for existing session
+            Task {
+                if let _ = try? await FirebaseService.shared.fetchLatestDiagnosticResults(userId: user.uid) {
+                    await MainActor.run {
+                        self.showDiagnostic = false
+                    }
+                } else {
+                    await MainActor.run {
+                        self.showDiagnostic = true
+                    }
+                }
+            }
+        }
+        
+        // Listen for auth state changes
         Auth.auth().addStateDidChangeListener { [weak self] _, user in
             guard let self = self else { return }
             self.currentUser = user
