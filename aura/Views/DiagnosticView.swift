@@ -101,8 +101,4 @@ struct DiagnosticView: View {
             }
         }
     }
-<<<<<<< HEAD
 }
-=======
-} 
->>>>>>> parent of 348b87b (implemented diagnostic with ai)

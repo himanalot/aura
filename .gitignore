@@ -65,4 +65,5 @@ profile
 # Temporary files
 *.tmp
 *.bak
-*.log
+*.log.DS_Store
+*.xcuserstate
