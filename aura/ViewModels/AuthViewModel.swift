@@ -11,6 +11,7 @@ class AuthViewModel: ObservableObject {
     @Published var isSignedIn = false
     @Published var currentUser: User?
     @Published var alertItem: AlertItem?
+    @Published var showDiagnostic = false
     
     init() {
         Auth.auth().addStateDidChangeListener { [weak self] _, user in
@@ -37,6 +38,9 @@ class AuthViewModel: ObservableObject {
                     title: "Sign Up Error",
                     message: error.localizedDescription
                 )
+            } else {
+                self?.isSignedIn = false
+                self?.showDiagnostic = true
             }
         }
     }

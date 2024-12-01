@@ -55,6 +55,9 @@ struct LoginView: View {
                     dismissButton: .default(Text("OK"))
                 )
             }
+            .sheet(isPresented: $authViewModel.showDiagnostic) {
+                DiagnosticView()
+            }
         }
     }
 } 

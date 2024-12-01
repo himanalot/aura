@@ -122,4 +122,15 @@ class FirebaseService {
         
         return downloadURL
     }
+    
+    // Add this method
+    func saveDiagnosticResults(_ results: DiagnosticResults) async throws {
+        let data: [String: Any] = [
+            "answers": results.answers,
+            "date": results.date,
+            "userId": results.userId
+        ]
+        
+        try await db.collection("diagnostics").document().setData(data)
+    }
 } 
