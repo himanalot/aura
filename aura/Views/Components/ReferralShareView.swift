@@ -6,6 +6,7 @@ struct ReferralShareView: View {
     let referralCode: ReferralCode
     let onDismiss: () -> Void
     @State private var codeCopied = false
+    @State private var isGeneratingCode = false
     
     var body: some View {
         NavigationView {
@@ -33,30 +34,49 @@ struct ReferralShareView: View {
                         .font(.subheadline)
                     
                     if referralCode.usedBy.count >= 2 {
-                        Text("Code fully used! You now have a free analysis!")
+                        Text("Code fully used! Generate a new code to share!")
                             .foregroundColor(.green)
                             .font(.headline)
                     }
                 }
                 
-                Button(action: {
-                    UIPasteboard.general.string = referralCode.code
-                    codeCopied = true
-                    
-                    // Reset the copied state after 2 seconds
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        codeCopied = false
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: codeCopied ? "checkmark" : "doc.on.doc")
-                        Text(codeCopied ? "Copied!" : "Copy Code")
+                if referralCode.usedBy.count >= 2 {
+                    Button(action: generateNewCode) {
+                        if isGeneratingCode {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                Text("Generate New Code")
+                            }
+                        }
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.accentColor)
                     .foregroundColor(.white)
                     .cornerRadius(10)
+                    .disabled(isGeneratingCode)
+                } else {
+                    Button(action: {
+                        UIPasteboard.general.string = referralCode.code
+                        codeCopied = true
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            codeCopied = false
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: codeCopied ? "checkmark" : "doc.on.doc")
+                            Text(codeCopied ? "Copied!" : "Copy Code")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
                 }
             }
             .padding(24)
@@ -68,6 +88,26 @@ struct ReferralShareView: View {
                         onDismiss()
                     }
                 }
+            }
+        }
+    }
+    
+    private func generateNewCode() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        isGeneratingCode = true
+        
+        Task {
+            do {
+                _ = try await FirebaseService.shared.generateReferralCode(for: userId)
+                await MainActor.run {
+                    dismiss()
+                    onDismiss()
+                }
+            } catch {
+                print("Error generating new code: \(error)")
+            }
+            await MainActor.run {
+                isGeneratingCode = false
             }
         }
     }

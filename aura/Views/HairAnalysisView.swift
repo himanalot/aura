@@ -206,8 +206,17 @@ struct HairAnalysisView: View {
                     if let status = referralStatus, status.availableAnalyses > 0 {
                         await performAnalysis(image: image)
                     } else {
-                        // Only generate a new code if there isn't one at all
-                        if generatedReferralCode == nil {
+                        // Check if current code is fully used
+                        let currentCodeUsed = generatedReferralCode?.usedBy.count ?? 0 >= 2
+                        
+                        // Check if all existing codes are fully used
+                        let allUserCodes = try await FirebaseService.shared.getReferralCodesByOwner(userId: userId)
+                        let hasUnusedCode = allUserCodes.contains { code in
+                            code.usedBy.count < 2
+                        }
+                        
+                        if currentCodeUsed && !hasUnusedCode && (referralStatus?.availableAnalyses ?? 0) < 1 {
+                            // Generate new code if current code is used up, no unused codes exist, and no available analyses
                             isGeneratingCode = true
                             do {
                                 generatedReferralCode = try await FirebaseService.shared.generateReferralCode(for: userId)

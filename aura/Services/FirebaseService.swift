@@ -327,4 +327,21 @@ class FirebaseService {
             )
         }
     }
+    
+    func getReferralCodesByOwner(userId: String) async throws -> [ReferralCode] {
+        let snapshot = try await db.collection("referralCodes")
+            .whereField("ownerId", isEqualTo: userId)
+            .getDocuments()
+        
+        return snapshot.documents.map { document in
+            let data = document.data()
+            return ReferralCode(
+                id: document.documentID,
+                ownerId: data["ownerId"] as? String ?? "",
+                code: data["code"] as? String ?? "",
+                usedBy: data["usedBy"] as? [String] ?? [],
+                createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+            )
+        }
+    }
 } 
