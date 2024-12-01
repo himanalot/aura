@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import MLKit
+import FirebaseAuth
 
 struct HairAnalysisView: View {
     @StateObject private var viewModel = HairAnalysisViewModel()
@@ -10,6 +11,11 @@ struct HairAnalysisView: View {
     @State private var showError = false
     @State private var isAnalyzing = false
     @State private var navigationPath = NavigationPath()
+    @State private var showReferralView = false
+    @State private var showReferralCodeEntry = false
+    @State private var showReferralCodeShare = false
+    @State private var referralStatus: UserReferralStatus?
+    @State private var generatedReferralCode: ReferralCode?
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -77,6 +83,26 @@ struct HairAnalysisView: View {
                         .disabled(isAnalyzing)
                         .padding(.horizontal)
                     }
+                    
+                    Button(action: { showReferralCodeEntry = true }) {
+                        HStack {
+                            Image(systemName: "ticket.fill")
+                            Text("Enter Referral Code")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(AuraTheme.cardBackground)
+                                .shadow(color: Color.black.opacity(0.1), radius: 8)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(AuraTheme.gradient, lineWidth: 1)
+                        )
+                        .foregroundStyle(AuraTheme.gradient)
+                    }
+                    .padding(.horizontal)
                 }
                 .padding(.vertical, 24)
             }
@@ -98,39 +124,81 @@ struct HairAnalysisView: View {
                 ImagePicker(image: $selectedImage, sourceType: .photoLibrary)
             }
             .sheet(isPresented: $showCamera) {
-                ImagePicker(image: $selectedImage, sourceType: .camera)
+                CameraView(image: $selectedImage)
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(viewModel.error?.localizedDescription ?? "An error occurred while analyzing the image.")
             }
+            .sheet(isPresented: $showReferralCodeShare) {
+                if let code = generatedReferralCode {
+                    ReferralShareView(referralCode: code) {
+                        showReferralCodeShare = false
+                    }
+                }
+            }
+            .sheet(isPresented: $showReferralCodeEntry) {
+                ReferralView {
+                    Task {
+                        if let userId = Auth.auth().currentUser?.uid {
+                            referralStatus = try? await FirebaseService.shared.getReferralStatus(userId: userId)
+                        }
+                    }
+                }
+            }
+            .task {
+                if let userId = Auth.auth().currentUser?.uid {
+                    referralStatus = try? await FirebaseService.shared.getReferralStatus(userId: userId)
+                }
+            }
         }
     }
     
     private func analyzeImage() {
         guard let image = selectedImage, !isAnalyzing else { return }
-        isAnalyzing = true
         
         Task {
             do {
-                try await viewModel.analyzeHair(image: image)
-                await MainActor.run {
-                    isAnalyzing = false
-                    if let analysis = viewModel.hairAnalysis {
-                        navigationPath.append(analysis)
+                if let userId = Auth.auth().currentUser?.uid {
+                    // Check if user has available analyses
+                    if let status = referralStatus, status.availableAnalyses > 0 {
+                        // User has available analyses, proceed with analysis
+                        await performAnalysis(image: image)
+                    } else {
+                        // Generate referral code if they don't have one
+                        if generatedReferralCode == nil {
+                            generatedReferralCode = try await FirebaseService.shared.generateReferralCode(for: userId)
+                        }
+                        showReferralCodeShare = true
                     }
                 }
             } catch {
                 await MainActor.run {
                     showError = true
-                    isAnalyzing = false
                 }
             }
         }
     }
+    
+    private func performAnalysis(image: UIImage) async {
+        isAnalyzing = true
+        do {
+            try await viewModel.analyzeHair(image: image)
+            await MainActor.run {
+                isAnalyzing = false
+                if let analysis = viewModel.hairAnalysis {
+                    navigationPath.append(analysis)
+                }
+            }
+        } catch {
+            await MainActor.run {
+                showError = true
+                isAnalyzing = false
+            }
+        }
+    }
 }
-
 
 struct ActionButton: View {
     let title: String
@@ -177,4 +245,4 @@ struct AnalyzingOverlayView: View {
             .padding(24)
         }
     }
-} 
+}

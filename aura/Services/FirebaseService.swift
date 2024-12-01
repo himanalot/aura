@@ -1,6 +1,7 @@
 import Foundation
 import Firebase
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 import FirebaseStorage
 import FirebaseAuth
 
@@ -43,7 +44,7 @@ class FirebaseService {
                 "techniques": analysis.recommendations.techniques,
                 "lifestyle": analysis.recommendations.lifestyle
             ],
-            "date": analysis.date,
+            "date": FirebaseFirestore.Timestamp(date: analysis.date),
             "userId": userId
         ]
         
@@ -68,9 +69,11 @@ class FirebaseService {
                   let techniques = recommendationsData["techniques"] as? [String],
                   let lifestyle = recommendationsData["lifestyle"] as? [String],
                   let overallScore = data["overallScore"] as? Int,
-                  let date = (data["date"] as? Timestamp)?.dateValue() else {
+                  let timestamp = data["date"] as? FirebaseFirestore.Timestamp else {
                 throw NSError(domain: "FirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid document format"])
             }
+            
+            let date = timestamp.dateValue()
             
             let scores = CategoryScores(
                 moisture: scoresData["moisture"] ?? 0,
@@ -147,11 +150,71 @@ class FirebaseService {
         
         let data = document.data()
         guard let answers = data["answers"] as? [String: String],
-              let date = (data["date"] as? Timestamp)?.dateValue(),
+              let date = (data["date"] as? FirebaseFirestore.Timestamp)?.dateValue(),
               let userId = data["userId"] as? String else {
             throw NSError(domain: "FirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid document format"])
         }
         
         return DiagnosticResults(answers: answers, date: date, userId: userId)
+    }
+    
+    func generateReferralCode(for userId: String) async throws -> ReferralCode {
+        let code = String((0..<6).map { _ in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".randomElement()! })
+        
+        let referralCode = ReferralCode(
+            id: UUID().uuidString,
+            ownerId: userId,
+            code: code,
+            usedBy: [],
+            createdAt: Date()
+        )
+        
+        try await db.collection("referralCodes").document(referralCode.id).setData([
+            "ownerId": referralCode.ownerId,
+            "code": referralCode.code,
+            "usedBy": referralCode.usedBy,
+            "createdAt": FirebaseFirestore.Timestamp(date: referralCode.createdAt)
+        ])
+        
+        return referralCode
+    }
+    
+    func useReferralCode(_ code: String, by userId: String) async throws {
+        let snapshot = try await db.collection("referralCodes")
+            .whereField("code", isEqualTo: code)
+            .getDocuments()
+        
+        guard let document = snapshot.documents.first,
+              var referralCode = try? document.data(as: ReferralCode.self),
+              referralCode.isValid,
+              !referralCode.usedBy.contains(userId) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid referral code"])
+        }
+        
+        try await document.reference.updateData([
+            "usedBy": FieldValue.arrayUnion([userId])
+        ])
+        
+        // Give free analyses to both users
+        try await updateAvailableAnalyses(userId: userId, increment: 1)
+        try await updateAvailableAnalyses(userId: referralCode.ownerId, increment: 1)
+    }
+    
+    func updateAvailableAnalyses(userId: String, increment: Int) async throws {
+        let ref = db.collection("users").document(userId)
+        try await ref.setData([
+            "availableAnalyses": FieldValue.increment(Int64(increment))
+        ], merge: true)
+    }
+    
+    func getReferralStatus(userId: String) async throws -> UserReferralStatus {
+        let userDoc = try await db.collection("users").document(userId).getDocument()
+        let data = userDoc.data() ?? [:]
+        
+        return UserReferralStatus(
+            referralCode: data["referralCode"] as? String,
+            usedReferralCode: data["usedReferralCode"] as? String,
+            availableAnalyses: data["availableAnalyses"] as? Int ?? 0
+        )
     }
 } 
