@@ -73,6 +73,18 @@ struct DiagnosticView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
         }
+        .task {
+            if let userId = Auth.auth().currentUser?.uid {
+                do {
+                    let results = try await FirebaseService.shared.fetchLatestDiagnosticResults(userId: userId)
+                    if results != nil {
+                        dismiss()
+                    }
+                } catch {
+                    print("Error fetching diagnostic results: \(error)")
+                }
+            }
+        }
         .onChange(of: viewModel.isDiagnosticComplete) { completed in
             if completed {
                 Task {

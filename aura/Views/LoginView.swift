@@ -55,7 +55,7 @@ struct LoginView: View {
                     dismissButton: .default(Text("OK"))
                 )
             }
-            .sheet(isPresented: $authViewModel.showDiagnostic) {
+            .fullScreenCover(isPresented: $authViewModel.showDiagnostic) {
                 DiagnosticView()
             }
         }

@@ -31,7 +31,17 @@ struct ContentView: View {
                 .onAppear {
                     Task {
                         await progressViewModel.loadAnalyses()
+                        if let userId = Auth.auth().currentUser?.uid {
+                            if let _ = try? await FirebaseService.shared.fetchLatestDiagnosticResults(userId: userId) {
+                                authViewModel.showDiagnostic = false
+                            } else {
+                                authViewModel.showDiagnostic = true
+                            }
+                        }
                     }
+                }
+                .fullScreenCover(isPresented: $authViewModel.showDiagnostic) {
+                    DiagnosticView()
                 }
                 .preferredColorScheme(.dark)
             } else {
