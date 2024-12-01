@@ -169,11 +169,11 @@ struct HairAnalysisView: View {
                 if let code = referralStatus?.referralCode,
                    !code.isEmpty {  // Only try to load if code exists and isn't empty
                     do {
-                        generatedReferralCode = try await FirebaseService.shared.getReferralCode(code)
-                    } catch {
-                        // If the code exists in user status but not in referralCodes collection,
-                        // create it in the collection
-                        do {
+                        let existingCodes = try await FirebaseService.shared.getReferralCodes(code: code)
+                        if let existingCode = existingCodes.first {
+                            generatedReferralCode = existingCode
+                        } else {
+                            // Only create a new code document if none exists for this code
                             let newReferralCode = ReferralCode(
                                 id: UUID().uuidString,
                                 ownerId: userId,
@@ -183,9 +183,9 @@ struct HairAnalysisView: View {
                             )
                             try await FirebaseService.shared.saveReferralCode(newReferralCode)
                             generatedReferralCode = newReferralCode
-                        } catch {
-                            print("Error recreating referral code: \(error)")
                         }
+                    } catch {
+                        print("Error loading referral code: \(error)")
                     }
                 }
             } catch {

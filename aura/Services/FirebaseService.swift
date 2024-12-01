@@ -310,4 +310,21 @@ class FirebaseService {
             "createdAt": FirebaseFirestore.Timestamp(date: referralCode.createdAt)
         ])
     }
+    
+    func getReferralCodes(code: String) async throws -> [ReferralCode] {
+        let snapshot = try await db.collection("referralCodes")
+            .whereField("code", isEqualTo: code)
+            .getDocuments()
+        
+        return snapshot.documents.map { document in
+            let data = document.data()
+            return ReferralCode(
+                id: document.documentID,
+                ownerId: data["ownerId"] as? String ?? "",
+                code: data["code"] as? String ?? "",
+                usedBy: data["usedBy"] as? [String] ?? [],
+                createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+            )
+        }
+    }
 } 
