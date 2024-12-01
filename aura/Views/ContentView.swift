@@ -29,6 +29,8 @@ struct ContentView: View {
                         .tag(2)
                 }
                 .onAppear {
+                    selectedTab = 0
+                    
                     Task {
                         await progressViewModel.loadAnalyses()
                         if let userId = Auth.auth().currentUser?.uid {
