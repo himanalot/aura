@@ -65,14 +65,6 @@ class HairAnalysisViewModel: ObservableObject {
         print("Image converted to base64")
         print("Base64 length: \(base64Image.count)")
         
-        let diagnosticResults = try? await FirebaseService.shared.fetchLatestDiagnosticResults(userId: Auth.auth().currentUser?.uid ?? "")
-        
-        let diagnosticInfo = if let results = diagnosticResults {
-            results.answers.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
-        } else {
-            "No diagnostic data available"
-        }
-        
         let requestBody: [String: Any] = [
             "model": "gpt-4-turbo",
             "messages": [
@@ -91,9 +83,6 @@ class HairAnalysisViewModel: ObservableObject {
                             "type": "text",
                             "text": """
                                 Analyze this hair image in detail and provide a JSON response with detailed ratings and specific recommendations.
-                                
-                                User's diagnostic information:
-                                \(diagnosticInfo)
                                 
                                 Required JSON structure:
                                 {
