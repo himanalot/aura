@@ -295,4 +295,19 @@ class FirebaseService {
             "availableAnalyses": FieldValue.increment(Int64(-1))
         ], merge: true)
     }
+    
+    func updateUserReferralCode(userId: String, code: String) async throws {
+        try await db.collection("users").document(userId).setData([
+            "referralCode": code
+        ], merge: true)
+    }
+    
+    func saveReferralCode(_ referralCode: ReferralCode) async throws {
+        try await db.collection("referralCodes").document(referralCode.id).setData([
+            "ownerId": referralCode.ownerId,
+            "code": referralCode.code,
+            "usedBy": referralCode.usedBy,
+            "createdAt": FirebaseFirestore.Timestamp(date: referralCode.createdAt)
+        ])
+    }
 } 

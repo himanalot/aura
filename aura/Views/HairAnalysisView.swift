@@ -166,19 +166,30 @@ struct HairAnalysisView: View {
         if let userId = Auth.auth().currentUser?.uid {
             do {
                 referralStatus = try await FirebaseService.shared.getReferralStatus(userId: userId)
-                if let code = referralStatus?.referralCode {
+                if let code = referralStatus?.referralCode,
+                   !code.isEmpty {  // Only try to load if code exists and isn't empty
                     do {
                         generatedReferralCode = try await FirebaseService.shared.getReferralCode(code)
                     } catch {
-                        print("Error loading existing referral code: \(error)")
-                        errorMessage = "Failed to load referral code"
-                        showError = true
+                        // If the code exists in user status but not in referralCodes collection,
+                        // create it in the collection
+                        do {
+                            let newReferralCode = ReferralCode(
+                                id: UUID().uuidString,
+                                ownerId: userId,
+                                code: code,
+                                usedBy: [],
+                                createdAt: Date()
+                            )
+                            try await FirebaseService.shared.saveReferralCode(newReferralCode)
+                            generatedReferralCode = newReferralCode
+                        } catch {
+                            print("Error recreating referral code: \(error)")
+                        }
                     }
                 }
             } catch {
                 print("Error loading referral status: \(error)")
-                errorMessage = "Failed to load referral status"
-                showError = true
             }
         }
     }
@@ -189,23 +200,24 @@ struct HairAnalysisView: View {
         Task {
             do {
                 if let userId = Auth.auth().currentUser?.uid {
+                    // Refresh referral status to get latest count
+                    await loadUserReferralStatus()
+                    
                     if let status = referralStatus, status.availableAnalyses > 0 {
                         await performAnalysis(image: image)
                     } else {
-                        // Generate new code or get existing one
-                        isGeneratingCode = true
-                        showReferralCodeShare = true
-                        
+                        // Only generate a new code if there isn't one at all
                         if generatedReferralCode == nil {
+                            isGeneratingCode = true
                             do {
                                 generatedReferralCode = try await FirebaseService.shared.generateReferralCode(for: userId)
                             } catch {
                                 errorMessage = "Failed to generate referral code: \(error.localizedDescription)"
                                 showError = true
                             }
+                            isGeneratingCode = false
                         }
-                        
-                        isGeneratingCode = false
+                        showReferralCodeShare = true
                     }
                 }
             } catch {
@@ -221,6 +233,11 @@ struct HairAnalysisView: View {
         isAnalyzing = true
         do {
             try await viewModel.analyzeHair(image: image)
+            if let userId = Auth.auth().currentUser?.uid {
+                try await FirebaseService.shared.decrementAvailableAnalyses(userId: userId)
+                // Refresh the status after decrementing
+                await loadUserReferralStatus()
+            }
             await MainActor.run {
                 isAnalyzing = false
                 if let analysis = viewModel.hairAnalysis {
