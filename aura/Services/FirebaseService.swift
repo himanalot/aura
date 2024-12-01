@@ -26,10 +26,10 @@ class FirebaseService {
                 "scores": [
                     "moisture": analysis.ratings.scores.moisture,
                     "damage": analysis.ratings.scores.damage,
-                    "scalp": analysis.ratings.scores.scalp,
-                    "breakage": analysis.ratings.scores.breakage,
+                    "texture": analysis.ratings.scores.texture,
+                    "frizz": analysis.ratings.scores.frizz,
                     "shine": analysis.ratings.scores.shine,
-                    "porosity": analysis.ratings.scores.porosity,
+                    "density": analysis.ratings.scores.density,
                     "elasticity": analysis.ratings.scores.elasticity
                 ]
             ],
@@ -75,10 +75,10 @@ class FirebaseService {
             let scores = CategoryScores(
                 moisture: scoresData["moisture"] ?? 0,
                 damage: scoresData["damage"] ?? 0,
-                scalp: scoresData["scalp"] ?? 0,
-                breakage: scoresData["breakage"] ?? 0,
+                texture: scoresData["texture"] ?? 0,
+                frizz: scoresData["frizz"] ?? 0,
                 shine: scoresData["shine"] ?? 0,
-                porosity: scoresData["porosity"] ?? 0,
+                density: scoresData["density"] ?? 0,
                 elasticity: scoresData["elasticity"] ?? 0
             )
             

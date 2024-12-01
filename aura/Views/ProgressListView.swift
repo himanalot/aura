@@ -71,10 +71,10 @@ struct ProgressTimelineCard: View {
             ], spacing: 12) {
                 CategoryScoreItem(label: "Moisture", score: analysis.ratings.scores.moisture)
                 CategoryScoreItem(label: "Damage", score: analysis.ratings.scores.damage)
-                CategoryScoreItem(label: "Scalp", score: analysis.ratings.scores.scalp)
-                CategoryScoreItem(label: "Breakage", score: analysis.ratings.scores.breakage)
+                CategoryScoreItem(label: "Texture", score: analysis.ratings.scores.texture)
+                CategoryScoreItem(label: "Frizz", score: analysis.ratings.scores.frizz)
                 CategoryScoreItem(label: "Shine", score: analysis.ratings.scores.shine)
-                CategoryScoreItem(label: "Porosity", score: analysis.ratings.scores.porosity)
+                CategoryScoreItem(label: "Density", score: analysis.ratings.scores.density)
             }
         }
         .padding()

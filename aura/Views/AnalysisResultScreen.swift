@@ -72,10 +72,10 @@ struct AnalysisResultScreen: View {
                     scores: CategoryScores(
                         moisture: 4.5,
                         damage: 3.0,
-                        scalp: 4.0,
-                        breakage: 3.5,
+                        texture: 4.0,
+                        frizz: 3.5,
                         shine: 4.0,
-                        porosity: 3.5,
+                        density: 3.5,
                         elasticity: 4.0
                     )
                 ),

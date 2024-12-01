@@ -92,10 +92,10 @@ class HairAnalysisViewModel: ObservableObject {
                                         "scores": {
                                             "moisture": (0-5 rating, can use .5 increments),
                                             "damage": (0-5 rating),
-                                            "scalp": (0-5 rating),
-                                            "breakage": (0-5 rating),
+                                            "texture": (0-5 rating),
+                                            "frizz": (0-5 rating),
                                             "shine": (0-5 rating),
-                                            "porosity": (0-5 rating),
+                                            "density": (0-5 rating),
                                             "elasticity": (0-5 rating)
                                         }
                                     },
@@ -235,10 +235,10 @@ class HairAnalysisViewModel: ObservableObject {
         let weights: [String: Double] = [
             "moisture": 1.0,
             "damage": 1.2,    // Weighted higher due to importance
-            "scalp": 1.0,
-            "breakage": 1.1,  // Slightly higher weight
+            "texture": 1.0,
+            "frizz": 0.8,     // Slightly lower weight (more cosmetic)
             "shine": 0.8,     // Slightly lower weight (more cosmetic)
-            "porosity": 0.9,
+            "density": 0.9,
             "elasticity": 1.0
         ]
         
@@ -246,10 +246,10 @@ class HairAnalysisViewModel: ObservableObject {
         let weightedSum = (
             scores.moisture * weights["moisture"]! +
             damagePositive * weights["damage"]! +
-            scores.scalp * weights["scalp"]! +
-            (5.0 - scores.breakage) * weights["breakage"]! + // Also invert breakage
+            scores.texture * weights["texture"]! +
+            scores.frizz * weights["frizz"]! +
             scores.shine * weights["shine"]! +
-            scores.porosity * weights["porosity"]! +
+            scores.density * weights["density"]! +
             scores.elasticity * weights["elasticity"]!
         )
         
@@ -281,7 +281,7 @@ class HairAnalysisViewModel: ObservableObject {
         }
         
         // Scalp health tips
-        if scores.scalp < 4.0 {
+        if scores.texture < 4.0 {
             tips.append(contentsOf: [
                 "Maintain a balanced diet rich in zinc and vitamin B",
                 "Practice scalp massage during washing",
@@ -290,7 +290,7 @@ class HairAnalysisViewModel: ObservableObject {
         }
         
         // Breakage-specific tips
-        if scores.breakage > 3.0 {
+        if scores.frizz > 3.0 {
             tips.append(contentsOf: [
                 "Include more protein-rich foods in your diet",
                 "Trim hair every 8-10 weeks",
@@ -299,7 +299,7 @@ class HairAnalysisViewModel: ObservableObject {
         }
         
         // Porosity-based tips
-        if scores.porosity < 3.0 || scores.porosity > 4.0 {
+        if scores.density < 3.0 || scores.density > 4.0 {
             tips.append(contentsOf: [
                 "Balance your hair's pH with apple cider vinegar rinses",
                 "Use lukewarm water instead of hot water when washing",
@@ -337,13 +337,13 @@ struct HairRatings: Codable, Hashable {
 }
 
 struct CategoryScores: Codable, Hashable {
-    let moisture: Double     // 0-5, supporting half stars
-    let damage: Double      // 0-5
-    let scalp: Double       // 0-5
-    let breakage: Double    // 0-5
-    let shine: Double       // 0-5
-    let porosity: Double    // 0-5
-    let elasticity: Double  // 0-5
+    let moisture: Double     // 0-5, visible dryness/hydration
+    let damage: Double      // 0-5, split ends and breakage
+    let texture: Double     // 0-5, smoothness vs roughness
+    let frizz: Double      // 0-5, frizz level
+    let shine: Double      // 0-5, light reflection
+    let density: Double    // 0-5, visible thickness/fullness
+    let elasticity: Double // 0-5, visible curl pattern retention
 }
 
 struct Recommendations: Codable, Hashable {

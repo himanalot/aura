@@ -43,10 +43,10 @@ struct CategoryScoresView: View {
     private let categories: [(String, String, String)] = [
         ("moisture", "drop.fill", "Moisture"),
         ("damage", "exclamationmark.triangle.fill", "Damage"),
-        ("scalp", "crown.fill", "Scalp Health"),
-        ("breakage", "scissors", "Breakage"),
+        ("texture", "circle.grid.cross.fill", "Texture"),
+        ("frizz", "wind", "Frizz"),
         ("shine", "sparkles", "Shine"),
-        ("porosity", "bubble.right.fill", "Porosity"),
+        ("density", "circle.hexagongrid.fill", "Density"),
         ("elasticity", "arrow.up.and.down", "Elasticity")
     ]
     
@@ -76,10 +76,10 @@ struct CategoryScoresView: View {
         switch category {
         case "moisture": return scores.moisture
         case "damage": return scores.damage
-        case "scalp": return scores.scalp
-        case "breakage": return scores.breakage
+        case "texture": return scores.texture
+        case "frizz": return scores.frizz
         case "shine": return scores.shine
-        case "porosity": return scores.porosity
+        case "density": return scores.density
         case "elasticity": return scores.elasticity
         default: return nil
         }
