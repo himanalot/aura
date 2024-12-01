@@ -101,4 +101,4 @@ struct DiagnosticView: View {
             }
         }
     }
-} 
+}
