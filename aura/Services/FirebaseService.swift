@@ -8,13 +8,24 @@ import FirebaseAuth
 class FirebaseService {
     static let shared = FirebaseService()
     
-    private let db = Firestore.firestore()
-    private let storage = Storage.storage()
+    private let db: Firestore
+    private let storage: Storage
     
     private init() {
+        // Ensure Firebase is configured only once
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
         }
+        
+        // Initialize after ensuring Firebase is configured
+        self.db = Firestore.firestore()
+        self.storage = Storage.storage()
+        
+        // Set up any necessary settings
+        let settings = FirestoreSettings()
+        settings.isPersistenceEnabled = true
+        settings.cacheSizeBytes = FirestoreCacheSizeUnlimited
+        self.db.settings = settings
     }
     
     // MARK: - Hair Analysis Methods
