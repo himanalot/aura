@@ -344,4 +344,25 @@ class FirebaseService {
             )
         }
     }
+    
+    // Add this function to create a new user document
+    func createNewUser(userId: String, email: String) async throws {
+        try await db.collection("users").document(userId).setData([
+            "email": email,
+            "availableAnalyses": 0,  // Start with 0 free analyses
+            "createdAt": Timestamp(date: Date())
+        ])
+    }
+    
+    // Add this function to check/create user
+    func ensureUserExists(userId: String, email: String) async throws {
+        let userDoc = try await db.collection("users").document(userId).getDocument()
+        if !userDoc.exists {
+            try await db.collection("users").document(userId).setData([
+                "email": email,
+                "availableAnalyses": 0,  // Start with 0 free analyses
+                "createdAt": Timestamp(date: Date())
+            ])
+        }
+    }
 } 

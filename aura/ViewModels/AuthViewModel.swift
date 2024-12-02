@@ -87,9 +87,26 @@ class AuthViewModel: ObservableObject {
                     title: "Sign Up Error",
                     message: error.localizedDescription
                 )
-            } else {
-                self?.isSignedIn = false
-                self?.showDiagnostic = true
+                return
+            }
+            
+            if let userId = result?.user.uid {
+                Task {
+                    do {
+                        try await FirebaseService.shared.createNewUser(userId: userId, email: email)
+                        await MainActor.run {
+                            self?.isSignedIn = true
+                            self?.showDiagnostic = true
+                        }
+                    } catch {
+                        print("Error creating user document: \(error)")
+                        // Still sign in the user even if document creation fails
+                        await MainActor.run {
+                            self?.isSignedIn = true
+                            self?.showDiagnostic = true
+                        }
+                    }
+                }
             }
         }
     }

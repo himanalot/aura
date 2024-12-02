@@ -166,8 +166,19 @@ struct HairAnalysisView: View {
         if let userId = Auth.auth().currentUser?.uid {
             do {
                 referralStatus = try await FirebaseService.shared.getReferralStatus(userId: userId)
-                if let code = referralStatus?.referralCode,
-                   !code.isEmpty {  // Only try to load if code exists and isn't empty
+                
+                // Check if user has no referral code
+                if referralStatus?.referralCode == nil {
+                    // Generate a new code if they don't have one
+                    do {
+                        generatedReferralCode = try await FirebaseService.shared.generateReferralCode(for: userId)
+                        // Refresh status after generating new code
+                        referralStatus = try await FirebaseService.shared.getReferralStatus(userId: userId)
+                    } catch {
+                        print("Error generating initial referral code: \(error)")
+                    }
+                } else if let code = referralStatus?.referralCode,
+                          !code.isEmpty {  // Only try to load if code exists and isn't empty
                     do {
                         let existingCodes = try await FirebaseService.shared.getReferralCodes(code: code)
                         if let existingCode = existingCodes.first {
@@ -200,7 +211,17 @@ struct HairAnalysisView: View {
         Task {
             do {
                 if let userId = Auth.auth().currentUser?.uid {
-                    // Refresh referral status to get latest count
+                    // Ensure user exists in Firebase
+                    do {
+                        try await FirebaseService.shared.ensureUserExists(
+                            userId: userId,
+                            email: Auth.auth().currentUser?.email ?? ""
+                        )
+                    } catch {
+                        print("Error checking/creating user: \(error)")
+                    }
+                    
+                    // Continue with existing flow
                     await loadUserReferralStatus()
                     
                     if let status = referralStatus, status.availableAnalyses > 0 {
