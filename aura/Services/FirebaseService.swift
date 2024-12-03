@@ -332,7 +332,7 @@ class FirebaseService {
     func createNewUser(userId: String, email: String) async throws {
         try await db.collection("users").document(userId).setData([
             "email": email,
-            "availableAnalyses": 0,  // Start with 0 free analyses
+            "availableAnalyses": 0,  // Changed from -1 to 0
             "createdAt": Timestamp(date: Date())
         ])
     }
@@ -341,11 +341,13 @@ class FirebaseService {
     func ensureUserExists(userId: String, email: String) async throws {
         let userDoc = try await db.collection("users").document(userId).getDocument()
         if !userDoc.exists {
-            try await db.collection("users").document(userId).setData([
-                "email": email,
-                "availableAnalyses": 0,  // Start with 0 free analyses
-                "createdAt": Timestamp(date: Date())
-            ])
+            try await createNewUser(userId: userId, email: email)
         }
+    }
+    
+    func setAvailableAnalyses(userId: String, amount: Int) async throws {
+        try await db.collection("users").document(userId).setData([
+            "availableAnalyses": amount
+        ], merge: true)
     }
 } 

@@ -221,34 +221,8 @@ struct HairAnalysisView: View {
                         print("Error checking/creating user: \(error)")
                     }
                     
-                    // Continue with existing flow
-                    await loadUserReferralStatus()
-                    
-                    if let status = referralStatus, status.availableAnalyses > 0 {
-                        await performAnalysis(image: image)
-                    } else {
-                        // Check if current code is fully used
-                        let currentCodeUsed = generatedReferralCode?.usedBy.count ?? 0 >= 1
-                        
-                        // Check if all existing codes are fully used
-                        let allUserCodes = try await FirebaseService.shared.getReferralCodesByOwner(userId: userId)
-                        let hasUnusedCode = allUserCodes.contains { code in
-                            code.usedBy.count < 1
-                        }
-                        
-                        if currentCodeUsed && !hasUnusedCode && (referralStatus?.availableAnalyses ?? 0) < 1 {
-                            // Generate new code if current code is used up, no unused codes exist, and no available analyses
-                            isGeneratingCode = true
-                            do {
-                                generatedReferralCode = try await FirebaseService.shared.generateReferralCode(for: userId)
-                            } catch {
-                                errorMessage = "Failed to generate referral code: \(error.localizedDescription)"
-                                showError = true
-                            }
-                            isGeneratingCode = false
-                        }
-                        showReferralCodeShare = true
-                    }
+                    // Directly perform analysis without checking referral status
+                    await performAnalysis(image: image)
                 }
             } catch {
                 await MainActor.run {
@@ -264,8 +238,9 @@ struct HairAnalysisView: View {
         do {
             try await viewModel.analyzeHair(image: image)
             if let userId = Auth.auth().currentUser?.uid {
-                try await FirebaseService.shared.decrementAvailableAnalyses(userId: userId)
-                // Refresh the status after decrementing
+                // Set available analyses to 0 instead of decrementing
+                try await FirebaseService.shared.setAvailableAnalyses(userId: userId, amount: 0)
+                // Refresh the status after updating
                 await loadUserReferralStatus()
             }
             await MainActor.run {
