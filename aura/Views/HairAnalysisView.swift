@@ -228,12 +228,12 @@ struct HairAnalysisView: View {
                         await performAnalysis(image: image)
                     } else {
                         // Check if current code is fully used
-                        let currentCodeUsed = generatedReferralCode?.usedBy.count ?? 0 >= 2
+                        let currentCodeUsed = generatedReferralCode?.usedBy.count ?? 0 >= 1
                         
                         // Check if all existing codes are fully used
                         let allUserCodes = try await FirebaseService.shared.getReferralCodesByOwner(userId: userId)
                         let hasUnusedCode = allUserCodes.contains { code in
-                            code.usedBy.count < 2
+                            code.usedBy.count < 1
                         }
                         
                         if currentCodeUsed && !hasUnusedCode && (referralStatus?.availableAnalyses ?? 0) < 1 {

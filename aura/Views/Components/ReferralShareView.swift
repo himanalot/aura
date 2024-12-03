@@ -16,7 +16,7 @@ struct ReferralShareView: View {
                     .fontWeight(.bold)
                 
                 VStack(spacing: 16) {
-                    Text("Share this code with 2 different friends to unlock your free analysis!")
+                    Text("Share this code with a friend to unlock your free analysis!")
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                     
@@ -29,18 +29,18 @@ struct ReferralShareView: View {
                                 .fill(Color(.systemGray6))
                         )
                     
-                    Text("\(referralCode.usedBy.count)/2 friends have used your code")
+                    Text("\(referralCode.usedBy.count)/1 friends have used your code")
                         .foregroundColor(.secondary)
                         .font(.subheadline)
                     
-                    if referralCode.usedBy.count >= 2 {
+                    if referralCode.usedBy.count >= 1 {
                         Text("Code fully used! Generate a new code to share!")
                             .foregroundColor(.green)
                             .font(.headline)
                     }
                 }
                 
-                if referralCode.usedBy.count >= 2 {
+                if referralCode.usedBy.count >= 1 {
                     Button(action: generateNewCode) {
                         if isGeneratingCode {
                             ProgressView()

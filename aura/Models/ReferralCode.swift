@@ -8,7 +8,7 @@ struct ReferralCode: Codable, Identifiable {
     let createdAt: Date
     
     var isValid: Bool {
-        usedBy.count < 2  // Requires 2 referrals
+        usedBy.count < 1  // Changed from 2 to 1 required referral
     }
 }
 
