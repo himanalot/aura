@@ -10,11 +10,12 @@ struct AnalysisResultScreen: View {
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 32) {
                     // Header with score
                     ScoreCircleView(score: analysis.overallScore)
-                        .frame(height: 120)
-                        .padding(.top)
+                        .frame(height: 240)
+                        .padding(.top, 24)
+                        .padding(.bottom, 8)
                     
                     // Categories
                     VStack(spacing: 20) {

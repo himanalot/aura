@@ -62,9 +62,18 @@ struct CategoryScoreView: View {
     let description: String
     @State private var animateScore = false
     
-    // Convert 0-5 scale to 0-100
+    // Normalize scores to 0-100 range, handling negative values for problematic categories
     private var normalizedScore: Int {
-        Int(score * 20)
+        let rawScore = score
+        switch label.lowercased() {
+        case "damage", "frizz":
+            // For negative categories, invert the score (100 - score)
+            // Ensure the result is between 0-100
+            return Int(min(100, max(0, 100 - rawScore)))
+        default:
+            // For positive categories, ensure score is between 0-100
+            return Int(min(100, max(0, rawScore)))
+        }
     }
     
     var body: some View {
@@ -223,72 +232,7 @@ struct RecommendationRow: View {
     }
 }
 
-struct CategoryScoresView: View {
-    let scores: CategoryScores
-    @State private var selectedCategory: String?
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Detailed Analysis")
-                .font(.title3)
-                .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 16) {
-                CategoryScoreView(
-                    label: "Moisture",
-                    score: scores.moisture * 20, // Convert to 100-point scale
-                    description: "Water retention and hydration levels"
-                )
-                .onTapGesture { selectedCategory = "Moisture" }
-                
-                CategoryScoreView(
-                    label: "Damage",
-                    score: (5 - scores.damage) * 20, // Invert and convert
-                    description: "Overall hair structure health"
-                )
-                .onTapGesture { selectedCategory = "Damage" }
-                
-                CategoryScoreView(
-                    label: "Texture",
-                    score: scores.texture * 20,
-                    description: "Hair pattern and smoothness"
-                )
-                .onTapGesture { selectedCategory = "Texture" }
-                
-                CategoryScoreView(
-                    label: "Frizz",
-                    score: (5 - scores.frizz) * 20, // Invert and convert
-                    description: "Flyaway and frizz control"
-                )
-                .onTapGesture { selectedCategory = "Frizz" }
-                
-                CategoryScoreView(
-                    label: "Shine",
-                    score: scores.shine * 20,
-                    description: "Light reflection and glossiness"
-                )
-                .onTapGesture { selectedCategory = "Shine" }
-                
-                CategoryScoreView(
-                    label: "Density",
-                    score: scores.density * 20,
-                    description: "Hair thickness and volume"
-                )
-                .onTapGesture { selectedCategory = "Density" }
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.systemBackground))
-                .shadow(color: Color.black.opacity(0.1), radius: 10)
-        )
-    }
-}
+
 
 // Distribution curve view
 struct ScoreDistributionView: View {
