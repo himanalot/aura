@@ -2,86 +2,125 @@ import SwiftUI
 
 struct ScoreCircleView: View {
     let score: Int
+    @State private var animateScore = false
     
     var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color.gray.opacity(0.2), lineWidth: 8)
-                .frame(width: 120, height: 120)
-            
-            Circle()
-                .trim(from: 0, to: CGFloat(score) / 100)
-                .stroke(
-                    AuraTheme.gradient,
-                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                )
-                .frame(width: 120, height: 120)
-                .rotationEffect(.degrees(-90))
-                .animation(.easeInOut, value: score)
-            
-            VStack(spacing: 2) {
-                Text("\(score)")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(AuraTheme.gradient)
-                Text("Score")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        VStack(spacing: 8) {
+            ZStack {
+                // Background circle
+                Circle()
+                    .stroke(Color.gray.opacity(0.1), lineWidth: 16)
+                
+                // Progress ring
+                Circle()
+                    .trim(from: 0, to: animateScore ? CGFloat(score) / 100 : 0)
+                    .stroke(
+                        scoreGradient,
+                        style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .animation(.spring(response: 1.2, dampingFraction: 0.8), value: animateScore)
+                
+                // Score display
+                VStack(spacing: 4) {
+                    Text("\(score)")
+                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                        .foregroundStyle(scoreGradient)
+                        .contentTransition(.numericText())
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: score)
+                    
+                    Text("Score")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .frame(width: 200, height: 200) // Increased size
+            .padding(.top, 24) // Added top padding
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.0)) {
+                animateScore = true
             }
         }
-        .frame(width: 140, height: 140)
-        .background(
-            Circle()
-                .fill(AuraTheme.cardBackground)
-                .shadow(color: Color.black.opacity(0.15), radius: 10)
-        )
+    }
+    
+    private var scoreGradient: LinearGradient {
+        switch score {
+        case 0..<40:
+            return LinearGradient(colors: [.red, .orange], startPoint: .leading, endPoint: .trailing)
+        case 40..<70:
+            return LinearGradient(colors: [.orange, .yellow], startPoint: .leading, endPoint: .trailing)
+        default:
+            return LinearGradient(colors: [.green, .mint], startPoint: .leading, endPoint: .trailing)
+        }
     }
 }
 
-struct CategoryScoresView: View {
-    let scores: CategoryScores
+struct CategoryScoreView: View {
+    let label: String
+    let score: Double
+    let description: String
+    @State private var animateScore = false
     
-    private let categories: [(String, String, String)] = [
-        ("moisture", "drop.fill", "Moisture"),
-        ("damage", "exclamationmark.triangle.fill", "Damage"),
-        ("texture", "circle.grid.cross.fill", "Texture"),
-        ("frizz", "wind", "Frizz"),
-        ("shine", "sparkles", "Shine"),
-        ("density", "circle.hexagongrid.fill", "Density"),
-        ("elasticity", "arrow.up.and.down", "Elasticity")
-    ]
+    // Convert 0-5 scale to 0-100
+    private var normalizedScore: Int {
+        Int(score * 20)
+    }
     
     var body: some View {
-        VStack(spacing: 16) {
-            ForEach(categories, id: \.0) { category, icon, label in
-                if let score = scoreFor(category) {
-                    HStack {
-                        Image(systemName: icon)
-                            .foregroundStyle(AuraTheme.gradient)
-                            .frame(width: 30)
-                        
-                        Text(label)
-                            .frame(width: 100, alignment: .leading)
-                        
-                        Spacer()
-                        
-                        StarsView(score: score)
-                    }
-                    .padding(.horizontal)
-                }
+        VStack(spacing: 12) {
+            ZStack {
+                // Background circle
+                Circle()
+                    .stroke(Color.gray.opacity(0.1), lineWidth: 10)
+                    .frame(width: 100, height: 100)
+                
+                // Progress circle
+                Circle()
+                    .trim(from: 0, to: animateScore ? CGFloat(normalizedScore) / 100 : 0)
+                    .stroke(
+                        scoreGradient,
+                        style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                    )
+                    .frame(width: 100, height: 100)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.spring(response: 0.8, dampingFraction: 0.8), value: animateScore)
+                
+                // Score text
+                Text("\(normalizedScore)")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(scoreGradient)
+                    .contentTransition(.numericText())
+            }
+            
+            VStack(spacing: 4) {
+                Text(label)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Text(description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+        }
+        .frame(maxWidth: 160)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.0).delay(0.3)) {
+                animateScore = true
             }
         }
     }
     
-    private func scoreFor(_ category: String) -> Double? {
-        switch category {
-        case "moisture": return scores.moisture
-        case "damage": return scores.damage
-        case "texture": return scores.texture
-        case "frizz": return scores.frizz
-        case "shine": return scores.shine
-        case "density": return scores.density
-        case "elasticity": return scores.elasticity
-        default: return nil
+    private var scoreGradient: LinearGradient {
+        switch normalizedScore {
+        case 0..<40:
+            return LinearGradient(colors: [.red, .orange], startPoint: .leading, endPoint: .trailing)
+        case 40..<70:
+            return LinearGradient(colors: [.orange, .yellow], startPoint: .leading, endPoint: .trailing)
+        default:
+            return LinearGradient(colors: [.green, .mint], startPoint: .leading, endPoint: .trailing)
         }
     }
 }
@@ -181,5 +220,127 @@ struct RecommendationRow: View {
             Text(text)
                 .font(.subheadline)
         }
+    }
+}
+
+struct CategoryScoresView: View {
+    let scores: CategoryScores
+    @State private var selectedCategory: String?
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Detailed Analysis")
+                .font(.title3)
+                .fontWeight(.bold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 16) {
+                CategoryScoreView(
+                    label: "Moisture",
+                    score: scores.moisture * 20, // Convert to 100-point scale
+                    description: "Water retention and hydration levels"
+                )
+                .onTapGesture { selectedCategory = "Moisture" }
+                
+                CategoryScoreView(
+                    label: "Damage",
+                    score: (5 - scores.damage) * 20, // Invert and convert
+                    description: "Overall hair structure health"
+                )
+                .onTapGesture { selectedCategory = "Damage" }
+                
+                CategoryScoreView(
+                    label: "Texture",
+                    score: scores.texture * 20,
+                    description: "Hair pattern and smoothness"
+                )
+                .onTapGesture { selectedCategory = "Texture" }
+                
+                CategoryScoreView(
+                    label: "Frizz",
+                    score: (5 - scores.frizz) * 20, // Invert and convert
+                    description: "Flyaway and frizz control"
+                )
+                .onTapGesture { selectedCategory = "Frizz" }
+                
+                CategoryScoreView(
+                    label: "Shine",
+                    score: scores.shine * 20,
+                    description: "Light reflection and glossiness"
+                )
+                .onTapGesture { selectedCategory = "Shine" }
+                
+                CategoryScoreView(
+                    label: "Density",
+                    score: scores.density * 20,
+                    description: "Hair thickness and volume"
+                )
+                .onTapGesture { selectedCategory = "Density" }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(.systemBackground))
+                .shadow(color: Color.black.opacity(0.1), radius: 10)
+        )
+    }
+}
+
+// Distribution curve view
+struct ScoreDistributionView: View {
+    let scores: [Double]
+    @State private var animateGraph = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Score Distribution")
+                .font(.headline)
+            
+            GeometryReader { geometry in
+                ZStack(alignment: .bottom) {
+                    // Background grid
+                    Path { path in
+                        for i in 0...4 {
+                            let x = CGFloat(i) * geometry.size.width / 4
+                            path.move(to: CGPoint(x: x, y: 0))
+                            path.addLine(to: CGPoint(x: x, y: geometry.size.height))
+                        }
+                    }
+                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    
+                    // Distribution curve
+                    Path { path in
+                        let points = calculateDistributionPoints(scores: scores, size: geometry.size)
+                        path.move(to: points[0])
+                        
+                        for i in 1..<points.count {
+                            let control = CGPoint(
+                                x: (points[i-1].x + points[i].x) / 2,
+                                y: min(points[i-1].y, points[i].y) - 20
+                            )
+                            path.addQuadCurve(to: points[i], control: control)
+                        }
+                    }
+                    .trim(from: 0, to: animateGraph ? 1 : 0)
+                    .stroke(AuraTheme.gradient, lineWidth: 2)
+                    .animation(.easeInOut(duration: 1.2), value: animateGraph)
+                }
+            }
+            .frame(height: 120)
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+        .onAppear { animateGraph = true }
+    }
+    
+    private func calculateDistributionPoints(scores: [Double], size: CGSize) -> [CGPoint] {
+        // Implementation of distribution calculation
+        // This is a placeholder - you'll need to implement the actual distribution logic
+        return []
     }
 } 
