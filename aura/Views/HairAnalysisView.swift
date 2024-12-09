@@ -22,91 +22,106 @@ struct HairAnalysisView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
-                AuraTheme.backgroundGradient
-                    .ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        AuraTheme.primary.opacity(0.8),
+                        AuraTheme.accent.opacity(0.6)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
-                VStack(spacing: 24) {
-                    if let image = selectedImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: UIScreen.main.bounds.height * 0.4)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-                            .padding(.horizontal)
-                            .overlay(
-                                Group {
-                                    if isAnalyzing {
-                                        AnalyzingOverlayView(progress: viewModel.analysisProgress)
+                ScrollView {
+                    VStack(spacing: 32) {
+                        if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: UIScreen.main.bounds.height * 0.4)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+                                .padding(.horizontal)
+                                .overlay(
+                                    Group {
+                                        if isAnalyzing {
+                                            AnalyzingOverlayView(progress: viewModel.analysisProgress)
+                                        }
                                     }
-                                }
-                            )
-                        
-                        Button(action: analyzeImage) {
-                            HStack {
-                                Image(systemName: "wand.and.stars")
-                                Text("Analyze Hair")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(AuraTheme.cardBackground)
-                                    .shadow(color: Color.black.opacity(0.1), radius: 8)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(AuraTheme.gradient)
-                                    )
-                            )
-                            .foregroundColor(.white)
-                        }
-                        .padding(.horizontal)
-                        .disabled(isAnalyzing)
-                    } else {
-                        UploadPlaceholderView()
-                            .padding(.horizontal)
-                    }
-                    
-                    VStack(spacing: 16) {
-                        HStack(spacing: 20) {
-                            ActionButton(
-                                title: "Take Photo",
-                                icon: "camera.fill",
-                                action: { showCamera = true }
-                            )
+                                )
                             
-                            ActionButton(
-                                title: "Upload Photo",
-                                icon: "photo.fill",
-                                action: { showImagePicker = true }
-                            )
+                            Button(action: analyzeImage) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "wand.and.stars")
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("Analyze Hair")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(.ultraThinMaterial)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                        )
+                                )
+                                .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
+                                .foregroundColor(.white)
+                            }
+                            .padding(.horizontal)
+                            .disabled(isAnalyzing)
+                            .pressEffect()
+                        } else {
+                            UploadPlaceholderView()
+                                .padding(.horizontal, 24)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .shadow(color: .black.opacity(0.1), radius: 8, y: 2)
+                                .padding(.horizontal)
                         }
-                        .disabled(isAnalyzing)
-                        .padding(.horizontal)
-                    }
-                    
-                    Button(action: { showReferralCodeEntry = true }) {
-                        HStack {
-                            Image(systemName: "ticket.fill")
-                            Text("Enter Referral Code")
+                        
+                        VStack(spacing: 20) {
+                            HStack(spacing: 16) {
+                                ActionButton(
+                                    title: "Take Photo",
+                                    icon: "camera.fill",
+                                    action: { showCamera = true }
+                                )
+                                
+                                ActionButton(
+                                    title: "Upload Photo",
+                                    icon: "photo.fill",
+                                    action: { showImagePicker = true }
+                                )
+                            }
+                            .padding(.horizontal)
+                            
+                            Button(action: { showReferralCodeEntry = true }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "ticket.fill")
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("Enter Referral Code")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.1), radius: 8, y: 4)
+                                .foregroundColor(.white)
+                            }
+                            .padding(.horizontal)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(AuraTheme.cardBackground)
-                                .shadow(color: Color.black.opacity(0.1), radius: 8)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(AuraTheme.gradient, lineWidth: 1)
-                        )
-                        .foregroundStyle(AuraTheme.gradient)
                     }
-                    .padding(.horizontal)
+                    .padding(.vertical, 32)
                 }
-                .padding(.vertical, 24)
             }
             .navigationDestination(for: HairAnalysis.self) { analysis in
                 AnalysisResultScreen(analysis: analysis) {
@@ -266,23 +281,40 @@ struct ActionButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
                 Text(title)
+                    .font(.system(size: 16, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(AuraTheme.cardBackground)
-                    .shadow(color: Color.black.opacity(0.1), radius: 8)
-            )
+            .frame(height: 56)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(AuraTheme.gradient, lineWidth: 1)
+                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
             )
-            .foregroundStyle(AuraTheme.gradient)
+            .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
+            .foregroundColor(.white)
+            // Add press animation
+            .pressEffect()
         }
+    }
+}
+
+extension View {
+    func pressEffect() -> some View {
+        buttonStyle(PressEffectStyle())
+    }
+}
+
+struct PressEffectStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)
     }
 }
 
@@ -305,3 +337,4 @@ struct AnalyzingOverlayView: View {
         }
     }
 }
+

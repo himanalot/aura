@@ -2,33 +2,28 @@ import SwiftUI
 
 struct UploadPlaceholderView: View {
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Image(systemName: "camera.circle.fill")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 100, height: 100)
-                .foregroundColor(.accentColor)
+                .frame(width: 80, height: 80)
+                .foregroundStyle(AuraTheme.gradient)
             
-            Text("Take or Upload a Photo")
-                .font(.title2)
-                .fontWeight(.medium)
-            
-            Text("We'll analyze your hair and provide personalized recommendations")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            VStack(spacing: 8) {
+                Text("Take or Upload a Photo")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                
+                Text("We'll analyze your hair and provide personalized recommendations")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
         }
-        .frame(height: 300)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(radius: 2)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-        )
+        .frame(height: 280)
+        .padding(.vertical, 32)
     }
 } 
