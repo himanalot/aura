@@ -31,6 +31,10 @@ struct ContentView: View {
                 .onAppear {
                     selectedTab = 0
                     
+                    // Style the tab bar
+                    UITabBar.appearance().unselectedItemTintColor = UIColor(white: 1.0, alpha: 0.5)
+                    UITabBar.appearance().tintColor = .white
+                    
                     Task {
                         await progressViewModel.loadAnalyses()
                         if let userId = Auth.auth().currentUser?.uid {
@@ -52,6 +56,6 @@ struct ContentView: View {
             }
         }
         .environmentObject(authViewModel)
-        .tint(AuraTheme.primary)
+        .tint(.white)
     }
 }
