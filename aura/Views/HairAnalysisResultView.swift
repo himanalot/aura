@@ -9,6 +9,9 @@ struct HairAnalysisResultView: View {
             ScoreCircleView(score: analysis.overallScore)
                 .frame(height: 120)
             
+            // Distribution Curve
+            DistributionCurveView(score: analysis.overallScore)
+            
             // Category Scores
             CategoryScoresView(scores: analysis.ratings.scores)
             

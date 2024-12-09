@@ -197,48 +197,33 @@ class FirebaseService {
     }
     
     func useReferralCode(_ code: String, by userId: String) async throws {
-        let upperCode = code.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Get the referral code document first
-        let snapshot = try await db.collection("referralCodes")
-            .whereField("code", isEqualTo: upperCode)
+        let referralQuery = try await db.collection("referralCodes")
+            .whereField("code", isEqualTo: code)
             .getDocuments()
         
-        guard !snapshot.documents.isEmpty else {
+        guard let referralDoc = referralQuery.documents.first,
+              let referralCode = try? referralDoc.data(as: ReferralCode.self),
+              referralCode.isValid else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid referral code"])
         }
         
-        let document = snapshot.documents.first!
-        let data = document.data()
-        
-        // Manual decoding to ensure we get all fields
-        let referralCode = ReferralCode(
-            id: document.documentID,
-            ownerId: data["ownerId"] as? String ?? "",
-            code: data["code"] as? String ?? "",
-            usedBy: data["usedBy"] as? [String] ?? [],
-            createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
-        )
-        
-        // Validate the code
-        guard referralCode.isValid else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "This referral code has already been used"])
+        // Get user data for name
+        let userDoc = try await db.collection("users").document(userId).getDocument()
+        guard let userData = userDoc.data(),
+              let userName = userData["name"] as? String,
+              let userEmail = userData["email"] as? String else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User data not found"])
         }
         
-        // Update the referral code document with the new user
-        try await db.collection("referralCodes").document(referralCode.id).updateData([
-            "usedBy": FieldValue.arrayUnion([userId])
-        ])
+        // Update referral code document
+        try await db.collection("referralCodes")
+            .document(referralDoc.documentID)
+            .updateData([
+                "usedBy": FieldValue.arrayUnion([userId])
+            ])
         
-        // Update the user document with the used referral code
-        try await db.collection("users").document(userId).setData([
-            "usedReferralCode": upperCode
-        ], merge: true)
-        
-        // Increment available analyses for the referral code owner by 1
-        try await db.collection("users").document(referralCode.ownerId).setData([
-            "availableAnalyses": FieldValue.increment(Int64(1))
-        ], merge: true)
+        // Update user's referral status
+        try await createNewUser(userId: userId, email: userEmail, name: userName)
     }
     
     func updateAvailableAnalyses(userId: String, increment: Int) async throws {
@@ -329,19 +314,26 @@ class FirebaseService {
     }
     
     // Add this function to create a new user document
-    func createNewUser(userId: String, email: String) async throws {
-        try await db.collection("users").document(userId).setData([
+    func createNewUser(userId: String, email: String, name: String) async throws {
+        let userData: [String: Any] = [
             "email": email,
-            "availableAnalyses": 0,  // Changed from -1 to 0
-            "createdAt": Timestamp(date: Date())
-        ])
+            "name": name,
+            "createdAt": Timestamp(),
+            "availableAnalyses": 1  // Start with one free analysis
+        ]
+        
+        try await db.collection("users")
+            .document(userId)
+            .setData(userData)
     }
     
     // Add this function to check/create user
     func ensureUserExists(userId: String, email: String) async throws {
         let userDoc = try await db.collection("users").document(userId).getDocument()
         if !userDoc.exists {
-            try await createNewUser(userId: userId, email: email)
+            // Since we don't have the name at this point, use email as a fallback
+            let name = email.components(separatedBy: "@").first ?? "User"
+            try await createNewUser(userId: userId, email: email, name: name)
         }
     }
     

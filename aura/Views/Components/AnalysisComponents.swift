@@ -79,6 +79,166 @@ struct StarsView: View {
     }
 }
 
+struct DistributionCurveView: View {
+    let score: Int
+    let mean: Double = 50
+    let standardDeviation: Double = 15
+    @State private var animateCurve = false
+    @State private var animateMarker = false
+    
+    private let curvePoints = 200
+    private let curveHeight: CGFloat = 320
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            Text("Score Distribution")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundStyle(AuraTheme.gradient)
+                .padding(.top, 8)
+            
+            GeometryReader { geometry in
+                let width = geometry.size.width
+                let pointWidth = width / CGFloat(curvePoints)
+                
+                ZStack(alignment: .bottom) {
+                    // Bell curve fill
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: curveHeight))
+                        
+                        for i in 0...curvePoints {
+                            let x = CGFloat(i) * pointWidth
+                            let score = Double(i) * (100.0 / Double(curvePoints))
+                            let y = curveHeight * (1 - normalDistribution(score) * 8)
+                            
+                            if i == 0 {
+                                path.move(to: CGPoint(x: x, y: curveHeight))
+                            } else {
+                                path.addLine(to: CGPoint(x: x, y: y))
+                            }
+                        }
+                        path.addLine(to: CGPoint(x: width, y: curveHeight))
+                    }
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                AuraTheme.primary.opacity(0.2),
+                                AuraTheme.primary.opacity(0.05)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .opacity(animateCurve ? 1 : 0)
+                    
+                    // Curve line
+                    Path { path in
+                        for i in 0...curvePoints {
+                            let x = CGFloat(i) * pointWidth
+                            let score = Double(i) * (100.0 / Double(curvePoints))
+                            let y = curveHeight * (1 - normalDistribution(score) * 8)
+                            
+                            if i == 0 {
+                                path.move(to: CGPoint(x: x, y: y))
+                            } else {
+                                path.addLine(to: CGPoint(x: x, y: y))
+                            }
+                        }
+                    }
+                    .trim(from: 0, to: animateCurve ? 1 : 0)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                AuraTheme.primary,
+                                AuraTheme.primary.opacity(0.8)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        ),
+                        lineWidth: 2
+                    )
+                    
+                    // User's score marker
+                    let userX = CGFloat(score) * width / 100
+                    let userY = curveHeight * (1 - normalDistribution(Double(score)) * 8)
+                    
+                    // Score label
+                    Text("\(score)")
+                        .font(.system(.callout, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundStyle(AuraTheme.gradient)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(.systemBackground))
+                                .shadow(color: Color.black.opacity(0.1), radius: 4)
+                        )
+                        .position(x: userX, y: userY - 30) // Position above the dot
+                        .opacity(animateMarker ? 1 : 0)
+                    
+                    // Score marker dot
+                    Circle()
+                        .fill(AuraTheme.gradient)
+                        .frame(width: 8, height: 8)
+                        .shadow(color: AuraTheme.primary.opacity(0.3), radius: 4)
+                        .position(x: userX, y: userY) // Position directly on the curve
+                        .opacity(animateMarker ? 1 : 0)
+                }
+            }
+            .frame(height: curveHeight)
+            
+            // Distribution labels
+            HStack {
+                Text("Below Average")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Text("Average")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+                
+                Text("Above Average")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color(.systemBackground))
+                .shadow(color: Color.black.opacity(0.1), radius: 16, y: 4)
+        )
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.5)) {
+                animateCurve = true
+            }
+            
+            withAnimation(
+                .spring(
+                    response: 0.8,
+                    dampingFraction: 0.6
+                )
+                .delay(0.8)
+            ) {
+                animateMarker = true
+            }
+        }
+    }
+    
+    private func normalDistribution(_ x: Double) -> Double {
+        let exponent = -pow(x - mean, 2) / (2 * pow(standardDeviation, 2))
+        return exp(exponent) / (standardDeviation * sqrt(2 * .pi))
+    }
+}
+
 struct RecommendationsView: View {
     let recommendations: Recommendations
     

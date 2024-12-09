@@ -11,7 +11,7 @@ struct CategoryScoreView: View {
         let rawScore = score
         switch label.lowercased() {
         case "damage", "frizz":
-            return Int(min(100, max(0, 100 - rawScore)))
+            return Int(min(100, max(0, rawScore)))
         default:
             return Int(min(100, max(0, rawScore)))
         }

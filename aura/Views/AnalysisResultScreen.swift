@@ -33,6 +33,18 @@ struct AnalysisResultScreen: View {
                             .shadow(color: Color.black.opacity(0.1), radius: 10)
                     )
                     
+                    // Distribution Curve - Moved here and made taller
+                    VStack(spacing: 20) {
+                        DistributionCurveView(score: analysis.overallScore)
+                            .frame(height: 280) // Made significantly taller
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.1), radius: 10)
+                    )
+                    
                     // Recommendations
                     VStack(spacing: 20) {
                         RecommendationsView(recommendations: analysis.recommendations)
