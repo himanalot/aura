@@ -1,13 +1,24 @@
 import SwiftUI
 
+// Add this if DistributionCurveView is in a separate module
+// import AuraComponents 
+
 struct AnalysisResultScreen: View {
     let analysis: HairAnalysis
     let onNewAnalysis: () -> Void
     
     var body: some View {
         ZStack {
-            AuraTheme.backgroundGradient
-                .ignoresSafeArea()
+            // Background gradient
+            LinearGradient(
+                colors: [
+                    AuraTheme.primary.opacity(0.8),
+                    AuraTheme.accent.opacity(0.6)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 32) {
@@ -15,46 +26,51 @@ struct AnalysisResultScreen: View {
                     ScoreCircleView(score: analysis.overallScore)
                         .frame(height: 240)
                         .padding(.top, 24)
-                        .padding(.bottom, 8)
                     
-                    // Categories
+                    // Detailed Analysis
                     VStack(spacing: 20) {
-                        Text("Hair Analysis")
-                            .font(.title2)
+                        Text("Detailed Analysis")
+                            .font(.system(.title3, design: .rounded))
                             .fontWeight(.bold)
-                            .foregroundStyle(AuraTheme.gradient)
+                            .foregroundColor(.white)
                         
                         CategoryScoresView(scores: analysis.ratings.scores)
+                            .padding(.horizontal)
                     }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(.systemBackground))
-                            .shadow(color: Color.black.opacity(0.1), radius: 10)
-                    )
+                    .padding(.vertical)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .shadow(color: .black.opacity(0.15), radius: 12)
                     
-                    // Distribution Curve - Moved here and made taller
+                    // Distribution Curve
                     VStack(spacing: 20) {
-                        DistributionCurveView(score: analysis.overallScore)
-                            .frame(height: 280) // Made significantly taller
+                        Text("Score Distribution")
+                            .font(.system(.title3, design: .rounded))
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        
+                        ScoreDistributionView(score: analysis.overallScore)
+                            .padding(.horizontal)
                     }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(.systemBackground))
-                            .shadow(color: Color.black.opacity(0.1), radius: 10)
-                    )
+                    .padding(.vertical)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .shadow(color: .black.opacity(0.15), radius: 12)
                     
                     // Recommendations
                     VStack(spacing: 20) {
+                        Text("Recommendations")
+                            .font(.system(.title3, design: .rounded))
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        
                         RecommendationsView(recommendations: analysis.recommendations)
+                            .padding(.horizontal)
                     }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(.systemBackground))
-                            .shadow(color: Color.black.opacity(0.1), radius: 10)
-                    )
+                    .padding(.vertical)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 32))
+                    .shadow(color: .black.opacity(0.15), radius: 12)
                 }
                 .padding(24)
             }
@@ -68,7 +84,7 @@ struct AnalysisResultScreen: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: onNewAnalysis) {
                     Label("New Analysis", systemImage: "plus.circle.fill")
-                        .foregroundStyle(AuraTheme.gradient)
+                        .foregroundColor(.white)
                 }
             }
         }

@@ -10,7 +10,7 @@ struct HairAnalysisResultView: View {
                 .frame(height: 120)
             
             // Distribution Curve
-            DistributionCurveView(score: analysis.overallScore)
+            ScoreDistributionView(score: analysis.overallScore)
             
             // Category Scores
             CategoryScoresView(scores: analysis.ratings.scores)

@@ -20,6 +20,16 @@ struct CategoryScoreView: View {
     var body: some View {
         VStack(spacing: 12) {
             ZStack {
+                // Update background styling to match login view
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 110, height: 110)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    )
+                    .shadow(color: AuraTheme.primary.opacity(0.3), radius: 8, y: 4)
+                
                 // Glowing background effect
                 Circle()
                     .fill(scoreGradient.opacity(0.1))
@@ -51,7 +61,7 @@ struct CategoryScoreView: View {
             
             VStack(spacing: 4) {
                 Text(label)
-                    .font(.subheadline)
+                    .font(.system(.subheadline, design: .rounded))
                     .fontWeight(.medium)
                     .foregroundStyle(AuraTheme.gradient)
                 
