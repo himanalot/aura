@@ -60,13 +60,11 @@ struct HairAnalysisView: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .fill(.ultraThinMaterial)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                        )
+                                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
                                 )
                                 .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
                                 .foregroundColor(.white)
@@ -297,7 +295,6 @@ struct ActionButton: View {
             )
             .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
             .foregroundColor(.white)
-            // Add press animation
             .pressEffect()
         }
     }
